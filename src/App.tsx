@@ -1,35 +1,86 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import {AuthProvider} from "@/contexts/AuthContext";
+import {useAuth} from "@/hooks/useAuth";
+import {BrowserRouter, Navigate, Routes, Route} from "react-router-dom";
+import type {JSX} from "react";
+import LoginPage from "@/pages/Login";
+import MainLayout from "@/components/Layout/MainLayout";
+import DashboardPage from "@/pages/Dashboards";
 
-function App() {
-  const [count, setCount] = useState(0)
+function PrivateRoute({children}: { children: JSX.Element }) {
+    const {signed, loading} = useAuth();
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="text-red-500">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    if (loading) {
+        return <div className="flex h-screen items-center justify-center">Loading...</div>;
+    }
+
+    if (!signed) {
+        return <Navigate to={"/"}/>;
+    }
+
+    return children;
 }
 
-export default App
+function AppRoutes() {
+    return (
+        <Routes>
+            <Route path="/" element={<LoginPage/>}/>
+
+
+            <Route
+                path="/dashboard"
+                element={
+                    <PrivateRoute>
+                        <MainLayout>
+                            <DashboardPage />
+                        </MainLayout>
+
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/orders"
+                element={
+                    <PrivateRoute>
+                        <MainLayout>
+                            <div className="flex h-screen items-center justify-center">Orders - Protected Route</div>
+                        </MainLayout>
+
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/history"
+                element={
+                    <PrivateRoute>
+                        <MainLayout>
+                            <div className="flex h-screen items-center justify-center">Histórico - Protected Route</div>
+                        </MainLayout>
+
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/config"
+                element={
+                    <PrivateRoute>
+                        <MainLayout>
+                            <div className="flex h-screen items-center justify-center">Configurações - Protected Route</div>
+                        </MainLayout>
+
+                    </PrivateRoute>
+                }
+            />
+        </Routes>
+    );
+}
+
+export default function App() {
+    return (
+        <BrowserRouter>
+            <AuthProvider>
+                <AppRoutes/>
+            </AuthProvider>
+        </BrowserRouter>
+    );
+}

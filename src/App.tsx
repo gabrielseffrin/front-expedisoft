@@ -6,6 +6,7 @@ import type {JSX} from "react";
 import LoginPage from "@/pages/Login";
 import MainLayout from "@/components/Layout/MainLayout";
 import DashboardPage from "@/pages/Dashboards";
+import OrdersPage from "@/pages/Orders";
 
 function PrivateRoute({children}: { children: JSX.Element }) {
     const {signed, loading} = useAuth();
@@ -31,10 +32,9 @@ function AppRoutes() {
                 path="/dashboard"
                 element={
                     <PrivateRoute>
-                        <MainLayout>
+                        <MainLayout title="Dashboard" description="Visão geral do sistema">
                             <DashboardPage />
                         </MainLayout>
-
                     </PrivateRoute>
                 }
             />
@@ -42,10 +42,9 @@ function AppRoutes() {
                 path="/orders"
                 element={
                     <PrivateRoute>
-                        <MainLayout>
-                            <div className="flex h-screen items-center justify-center">Orders - Protected Route</div>
+                        <MainLayout title="Orderns de Carregamento" description="Agendar e gerenciar ordens">
+                            <OrdersPage />
                         </MainLayout>
-
                     </PrivateRoute>
                 }
             />
@@ -53,10 +52,9 @@ function AppRoutes() {
                 path="/history"
                 element={
                     <PrivateRoute>
-                        <MainLayout>
+                        <MainLayout title="Histórico" description="Histórico de pedidos e operações">
                             <div className="flex h-screen items-center justify-center">Histórico - Protected Route</div>
                         </MainLayout>
-
                     </PrivateRoute>
                 }
             />
@@ -64,7 +62,7 @@ function AppRoutes() {
                 path="/config"
                 element={
                     <PrivateRoute>
-                        <MainLayout>
+                        <MainLayout title="Configurações" description="Configurações do sistema">
                             <div className="flex h-screen items-center justify-center">Configurações - Protected Route</div>
                         </MainLayout>
 

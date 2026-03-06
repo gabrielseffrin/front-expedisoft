@@ -3,7 +3,13 @@ import {SidebarProvider, SidebarTrigger} from "@/components/ui/sidebar"
 import {AppSidebar} from "@/components/app-sidebar"
 import React from "react";
 
-export default function MainLayout({children}: { children: React.ReactNode }) {
+interface MainLayoutProps {
+    children: React.ReactNode;
+    title?: string;
+    description?: string;
+}
+
+export default function MainLayout({children, title = "Área do Gestor", description}: MainLayoutProps) {
 
     const time = new Date();
     const formattedTime = time.toLocaleTimeString([], {
@@ -22,14 +28,22 @@ export default function MainLayout({children}: { children: React.ReactNode }) {
 
                 <main className="flex-1 w-full bg-gray-50/50">
 
-                    <div className="p-4 border-b bg-white flex items-center gap-4">
-                        <SidebarTrigger/>
-                        <h2 className="font-semibold text-lg">Área do Gestor</h2>
+                    <div className="p-4 border-b bg-white flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <SidebarTrigger />
+                            <h2 className="font-semibold text-lg">
+                                {title}
+                            </h2>
+                        </div>
 
+                        <div className="flex items-center gap-2">
+                            <Calendar size={16} />
+                            <span>{formattedTime}</span>
+                        </div>
                     </div>
 
                     <div className="p-4 bg-white flex items-center gap-4">
-                        <Calendar/> {formattedTime}
+                        {description && <p className="">{description}</p>}
                     </div>
 
 

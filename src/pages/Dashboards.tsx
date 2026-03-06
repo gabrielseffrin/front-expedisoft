@@ -8,11 +8,6 @@ function CardAction(props: { children: ReactNode }) {
 export default function DashboardPage() {
     return (
         <>
-            <div className="text-center">
-                <h1 className="text-2xl font-bold mb-4">kkkkkkkkkkkkkkkkkkkk</h1>
-                <p>Welcome to the Dashboard page!</p>
-            </div>
-
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card>
                     <CardHeader>

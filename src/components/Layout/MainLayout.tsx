@@ -1,6 +1,6 @@
-import {Calendar} from "lucide-react"
-import {SidebarProvider, SidebarTrigger} from "@/components/ui/sidebar"
-import {AppSidebar} from "@/components/app-sidebar"
+import { Calendar } from "lucide-react"
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar"
 import React from "react";
 
 interface MainLayoutProps {
@@ -9,7 +9,11 @@ interface MainLayoutProps {
     description?: string;
 }
 
-export default function MainLayout({children, title = "Área do Gestor", description}: MainLayoutProps) {
+export default function MainLayout({
+                                       children,
+                                       title = "Área do Gestor",
+                                       description
+                                   }: MainLayoutProps) {
 
     const time = new Date();
     const formattedTime = time.toLocaleTimeString([], {
@@ -24,7 +28,8 @@ export default function MainLayout({children, title = "Área do Gestor", descrip
     return (
         <SidebarProvider>
             <div className="flex min-h-screen w-full">
-                <AppSidebar/>
+
+                <AppSidebar />
 
                 <main className="flex-1 w-full bg-gray-50/50">
 
@@ -42,12 +47,11 @@ export default function MainLayout({children, title = "Área do Gestor", descrip
                         </div>
                     </div>
 
-                    <div className="p-4 bg-white flex items-center gap-4">
-                        {description && <p className="">{description}</p>}
+                    <div className="p-4 bg-white">
+                        {description && <p>{description}</p>}
                     </div>
 
-
-                    <div className="p-6">
+                    <div className="">
                         {children}
                     </div>
 

@@ -5,12 +5,12 @@ import {
     type ColumnDef,
     flexRender,
     getCoreRowModel,
-    getPaginationRowModel,
     getFilteredRowModel,
     useReactTable,
     type SortingState,
     getSortedRowModel,
 } from "@tanstack/react-table"
+
 import {
     Table,
     TableBody,
@@ -19,18 +19,31 @@ import {
     TableHeader,
     TableRow,
 } from "./table"
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
+
+    // 🔥 controle externo
+    page: number
+    totalPages: number
+    onPageChange: (page: number) => void
+
+    isLoading?: boolean
 }
 
 export function DataTable<TData, TValue>({
                                              columns,
                                              data,
+                                             page,
+                                             totalPages,
+                                             onPageChange,
+                                             isLoading = false,
                                          }: DataTableProps<TData, TValue>) {
+
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = React.useState<string>("");
 
@@ -39,7 +52,6 @@ export function DataTable<TData, TValue>({
         columns,
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         onGlobalFilterChange: setGlobalFilter,
@@ -51,7 +63,8 @@ export function DataTable<TData, TValue>({
     })
 
     return (
-        <div>
+        <div className="w-full">
+
             <div className="flex items-center py-4">
                 <Input
                     placeholder="Digite para buscar..."
@@ -62,6 +75,7 @@ export function DataTable<TData, TValue>({
                     className="max-w-sm"
                 />
             </div>
+
             <div className="overflow-hidden rounded-md border">
                 <Table>
                     <TableHeader>
@@ -80,13 +94,17 @@ export function DataTable<TData, TValue>({
                             </TableRow>
                         ))}
                     </TableHeader>
+
                     <TableBody>
-                        {table.getRowModel().rows?.length ? (
+                        {isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                    Carregando...
+                                </TableCell>
+                            </TableRow>
+                        ) : table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
-                                >
+                                <TableRow key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -104,23 +122,31 @@ export function DataTable<TData, TValue>({
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                >
-                    Anterior
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                >
-                    Próximo
-                </Button>
+
+            <div className="flex items-center justify-between py-4">
+                <span className="text-sm text-muted-foreground">
+                    Página {page} de {totalPages}
+                </span>
+
+                <div className="flex items-center space-x-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onPageChange(Math.max(page - 1, 1))}
+                        disabled={page === 1 || isLoading}
+                    >
+                        Anterior
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onPageChange(Math.min(page + 1, totalPages))}
+                        disabled={page === totalPages || isLoading}
+                    >
+                        Próximo
+                    </Button>
+                </div>
             </div>
         </div>
     )

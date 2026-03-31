@@ -56,6 +56,11 @@ interface ScheduleOrderRequest {
     operator_id: string;
 }
 
+interface Dock {
+    id: string;
+    name: string;
+}
+
 interface PaginatedResponse<T> {
     data: T[];
     links: any;
@@ -69,6 +74,11 @@ export async function getOrders(page: number = 1): Promise<PaginatedResponse<Ord
 
 export async function getOrder(orderId: string): Promise<Order> {
     const response = await api.get<Order>(`/order/${orderId}`);
+    return response.data;
+}
+
+export async function getDocks(): Promise<Dock> {
+    const response = await api.get<Dock>(`/docks`);
     return response.data;
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, {useEffect, useState} from "react";
-import {getOrder, getOrders, scheduleOrder} from "@/services/orders.service";
+import {getDocks, getOrder, getOrders, scheduleOrder} from "@/services/orders.service";
 import {DataTable} from "@/components/ui/data-table";
 import {MoreHorizontal, CalendarIcon, Clock} from "lucide-react";
 import CustomAlert from "@/components/ui/custom-alert";
@@ -21,7 +21,6 @@ import {
     Dialog,
     DialogClose,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -33,7 +32,7 @@ import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {getOperators} from "@/services/user.service";
 
 export default function OrdersPage() {
-    const [orders, setOrders] = useState<Order[]>([]);
+    const [orders, setOrders] = useState<any>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [operators, setOperators] = useState([]);
@@ -46,6 +45,7 @@ export default function OrdersPage() {
     const [scheduledTime, setScheduledTime] = useState<string>("12:00");
     const [operator, setOperator] = useState<string>('');
     const [dock, setDock] = useState<string>('');
+    const [docks, setDocks] = useState<any>([]);
 
     const [loading, setLoading] = useState(false);
 
@@ -87,7 +87,7 @@ export default function OrdersPage() {
                 const statusConfig: Record<string, { label: string; className: string }> = {
                     pending: {label: 'Pendente', className: 'bg-red-100 text-red-800'},
                     completed: {label: 'Concluído', className: 'bg-green-100 text-green-800'},
-                    cancelled: {label: 'Cancelado', className: 'bg-red-100 text-red-800'},
+                    divergence: {label: 'Divergencia', className: 'bg-red-800 text-red-100'},
                     scheduled: {label: 'Agendada', className: 'bg-blue-100 text-blue-800'},
                 };
                 const config = statusConfig[status] ?? {label: status, className: 'bg-gray-100 text-gray-800'};
@@ -153,6 +153,19 @@ export default function OrdersPage() {
         }
     };
 
+    const fechDocks = async () => {
+        setLoading(true);
+        try {
+            const response = await getDocks();
+
+            setDocks(response);
+        } catch (error) {
+            setError("Não foi possível carregar as docas.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const handleOpenModal = async (id: string) => {
         try {
             const response = await getOrder(id);
@@ -201,6 +214,7 @@ export default function OrdersPage() {
     useEffect(() => {
         fetchOrders();
         fetchOperators();
+        fechDocks();
     }, []);
 
     useEffect(() => {
@@ -303,12 +317,12 @@ export default function OrdersPage() {
 
                             <div className="flex flex-col gap-2">
                                 <Label htmlFor="doca">Doca de Carregamento</Label>
-                                <Input
-                                    id="doca"
-                                    placeholder="Ex: Doca 01"
-                                    value={dock}
-                                    onChange={(e) => setDock(e.target.value)}
-                                />
+                                <select className="flex h-9 w-full rounded-md border border-input bg-background">
+                                    <option value="">Selecione uma doca</option>
+                                    {docks?.map((doca: any) => (
+                                        <option key={doca.id} value={doca.id}>{doca.dock_code}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 

@@ -27,11 +27,11 @@ export default function MainLayout({
 
     return (
         <SidebarProvider>
-            <div className="flex min-h-screen w-full">
+            <div className="flex min-h-screen w-full ">
 
                 <AppSidebar />
 
-                <main className="flex-1 w-full bg-gray-50/50">
+                <main className="flex-1 w-full">
 
                     <div className="p-4 border-b bg-white flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -47,8 +47,8 @@ export default function MainLayout({
                         </div>
                     </div>
 
-                    <div className="p-4 bg-white">
-                        {description && <p>{description}</p>}
+                    <div className="p-4 bg-white text-left">
+                        {description && <p className="text-sm text-muted-foreground">{description}</p>}
                     </div>
 
                     <div className="">

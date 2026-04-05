@@ -89,6 +89,7 @@ export default function OrdersPage() {
                     completed: {label: 'Concluído', className: 'bg-green-100 text-green-800'},
                     divergence: {label: 'Divergencia', className: 'bg-red-800 text-red-100'},
                     scheduled: {label: 'Agendada', className: 'bg-blue-100 text-blue-800'},
+                    in_progress: {label: 'Carregando', className: 'bg-blue-100 text-blue-800'},
                 };
                 const config = statusConfig[status] ?? {label: status, className: 'bg-gray-100 text-gray-800'};
                 return (
@@ -103,6 +104,8 @@ export default function OrdersPage() {
             header: "Ações",
             cell: ({row}: string) => {
                 const orderId = row.original.id;
+                const status = row.getValue('status') as string;
+
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -113,11 +116,18 @@ export default function OrdersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            {status === 'scheduled' || status === 'pending' && (
                             <DropdownMenuItem
                                 onClick={() => {
                                     handleOpenModal(orderId as string);
                                 }}>
                                 Agendar Carregamento
+                            </DropdownMenuItem>)}
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    handleOpenModal(orderId as string);
+                                }}>
+                                Detalhes da Ordem
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

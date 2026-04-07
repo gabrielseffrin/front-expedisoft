@@ -30,6 +30,7 @@ import {Input} from "@/components/ui/input";
 import {Calendar} from "@/components/ui/calendar";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {getOperators} from "@/services/user.service";
+import {useNavigate} from "react-router-dom";
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<any>([]);
@@ -48,6 +49,8 @@ export default function OrdersPage() {
     const [docks, setDocks] = useState<any>([]);
 
     const [loading, setLoading] = useState(false);
+
+    const navigate = useNavigate();
 
     const formatDate = (date: string | null) => {
         if (!date) return "-";
@@ -116,16 +119,18 @@ export default function OrdersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            {status === 'scheduled' || status === 'pending' && (
+                            {(status == 'pending' || status == 'scheduled') && (
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        handleOpenModal(orderId as string);
+                                    }}>
+                                    Agendar Carregamento
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                                 onClick={() => {
-                                    handleOpenModal(orderId as string);
-                                }}>
-                                Agendar Carregamento
-                            </DropdownMenuItem>)}
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    handleOpenModal(orderId as string);
+                                    handleOrderDatails(orderId as string);
+                                    console.log("aqui", orderId);
                                 }}>
                                 Detalhes da Ordem
                             </DropdownMenuItem>
@@ -220,6 +225,10 @@ export default function OrdersPage() {
             setDock('');
         }
     };
+
+    const handleOrderDatails = (id: string) => {
+        navigate(`/order-datails/${id}`);
+    }
 
     useEffect(() => {
         fetchOrders();

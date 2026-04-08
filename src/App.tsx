@@ -53,7 +53,7 @@ function AppRoutes() {
                 path="/order-datails/:orderId"
                 element={
                     <PrivateRoute>
-                        <MainLayout title="Detalhes da Ordem" description="Agendar e gerenciar ordens">
+                        <MainLayout title="Detalhes da Ordem" description="Informações detalhadas sobre a ordem selecionada">
                             <OrderDetails />
                         </MainLayout>
                     </PrivateRoute>

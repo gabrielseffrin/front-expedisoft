@@ -7,6 +7,7 @@ import LoginPage from "@/pages/Login";
 import MainLayout from "@/components/Layout/MainLayout";
 import DashboardPage from "@/pages/Dashboards";
 import OrdersPage from "@/pages/Orders";
+import OrderDetails from "@/pages/OrderDetails";
 
 function PrivateRoute({children}: { children: JSX.Element }) {
     const {signed, loading} = useAuth();
@@ -44,6 +45,16 @@ function AppRoutes() {
                     <PrivateRoute>
                         <MainLayout title="Orderns de Carregamento" description="Agendar e gerenciar ordens">
                             <OrdersPage />
+                        </MainLayout>
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/order-datails/:orderId"
+                element={
+                    <PrivateRoute>
+                        <MainLayout title="Detalhes da Ordem" description="Informações detalhadas sobre a ordem selecionada">
+                            <OrderDetails />
                         </MainLayout>
                     </PrivateRoute>
                 }

@@ -30,6 +30,7 @@ import {Input} from "@/components/ui/input";
 import {Calendar} from "@/components/ui/calendar";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {getOperators} from "@/services/user.service";
+import {useNavigate} from "react-router-dom";
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<any>([]);
@@ -48,6 +49,8 @@ export default function OrdersPage() {
     const [docks, setDocks] = useState<any>([]);
 
     const [loading, setLoading] = useState(false);
+
+    const navigate = useNavigate();
 
     const formatDate = (date: string | null) => {
         if (!date) return "-";
@@ -89,6 +92,7 @@ export default function OrdersPage() {
                     completed: {label: 'Concluído', className: 'bg-green-100 text-green-800'},
                     divergence: {label: 'Divergencia', className: 'bg-red-800 text-red-100'},
                     scheduled: {label: 'Agendada', className: 'bg-blue-100 text-blue-800'},
+                    in_progress: {label: 'Carregando', className: 'bg-blue-100 text-blue-800'},
                 };
                 const config = statusConfig[status] ?? {label: status, className: 'bg-gray-100 text-gray-800'};
                 return (
@@ -103,6 +107,8 @@ export default function OrdersPage() {
             header: "Ações",
             cell: ({row}: string) => {
                 const orderId = row.original.id;
+                const status = row.getValue('status') as string;
+
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -113,11 +119,20 @@ export default function OrdersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            {(status == 'pending' || status == 'scheduled') && (
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        handleOpenModal(orderId as string);
+                                    }}>
+                                    Agendar Carregamento
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                                 onClick={() => {
-                                    handleOpenModal(orderId as string);
+                                    handleOrderDatails(orderId as string);
+                                    console.log("aqui", orderId);
                                 }}>
-                                Agendar Carregamento
+                                Detalhes da Ordem
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -210,6 +225,10 @@ export default function OrdersPage() {
             setDock('');
         }
     };
+
+    const handleOrderDatails = (id: string) => {
+        navigate(`/order-datails/${id}`);
+    }
 
     useEffect(() => {
         fetchOrders();

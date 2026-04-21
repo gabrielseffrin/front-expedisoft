@@ -29,6 +29,7 @@ import {
 import CustomAlert from "@/components/ui/custom-alert";
 
 import { getOrder } from "@/services/orders.service";
+import OrderFeedbackCard from "@/components/OrderFeedbackCard";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
     pending: { label: 'Pendente', className: 'bg-red-100 text-red-800' },
@@ -138,22 +139,7 @@ export default function OrderDetails() {
                 </div>
             </div>
 
-            {order.status === "divergence" && (
-                <Card className="border-red-200 bg-red-50/40">
-                    <CardHeader className="pb-2">
-                        <div className="flex items-center gap-2 text-red-800">
-                            <AlertCircle className="h-5 w-5" />
-                            <CardTitle className="text-sm font-bold uppercase tracking-wider">Atenção: Divergência
-                                Detectada</CardTitle>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-red-900 leading-relaxed italic">
-                            &quot;{order.justification || "Nenhuma justificativa fornecida pelo operador."}&quot;
-                        </p>
-                    </CardContent>
-                </Card>
-            )}
+            <OrderFeedbackCard status={order.status} justification={order.justification} />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 

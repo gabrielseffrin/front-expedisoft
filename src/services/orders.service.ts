@@ -1,51 +1,62 @@
 import {api} from "./api";
 
-interface Order {
+export interface OrderPackage {
+    id?: string;
+    unique_package_code?: string;
+    quantity_in_package?: number;
+    status?: string;
+    checked_at?: string | null;
+}
+
+export interface OrderItem {
+    id: string;
+    quantity: number;
+    note: string;
+    product: {
+        id: string;
+        description: string;
+        sku: string;
+        unit: string;
+        weight: number;
+    };
+    packages: OrderPackage[];
+}
+
+export interface Order {
     id: string;
     external_id: string;
-    status: 'pending' | 'completed' | 'cancelled';
-    customerName: string;
-    destination: string;
-    carrier: string;
-    driver: string;
-    vehicle: string;
-    operator: string;
-    dock: string;
-    justification: string;
-    observation: string;
-    schedule: string;
-    startedAt: string;
-    completedAt: string;
-    items: [
-        {
-            id: string;
-            quantity: number;
-            note: string;
-            product: {
-                id: string;
-                description: string;
-                sku: string;
-                unit: string;
-                weight: number;
-            },
-            packages: [
-                {
-                    id: string;
-                    unique_package_code: string;
-                    quantity_in_package: number;
-                }
-            ]
-        }
-    ]
-    totalAmount: number;
-    createdAt: string;
-    updatedAt: string;
+    status: 'pending' | 'completed' | 'cancelled' | 'scheduled' | 'in_progress' | 'divergence';
+    customerName?: string;
+    customer?: string;
+    destination?: string;
+    carrier?: string;
+    driver?: string;
+    vehicle?: string;
+    operator?: string;
+    dock?: string;
+    justification?: string;
+    observation?: string;
+    schedule?: string;
+    startedAt?: string;
+    completedAt?: string;
+    started_at?: string | null;
+    completed_at?: string | null;
+    items?: OrderItem[];
+    totalAmount?: number;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 interface ScheduleOrderResponse {
     success: boolean;
     message: string;
     data?: Order;
+}
+
+export interface OrderResponse {
+    success?: boolean;
+    message?: string;
+    data: Order;
 }
 
 interface ScheduleOrderRequest {
@@ -63,8 +74,31 @@ interface Dock {
 
 interface PaginatedResponse<T> {
     data: T[];
-    links: any;
-    meta: any;
+    links: Record<string, unknown>;
+    meta: Record<string, unknown>;
+}
+
+export interface OrderPhoto {
+    id: string;
+    loading_order_id: string;
+    storage_path: string;
+    drive_id: string;
+    mime: string;
+    status: string;
+    uploaded_by: string;
+    uploaded_at: string;
+    created_at: string;
+    updated_at: string;
+    url: string;
+}
+
+export interface OrderPhotosResponse {
+    success: boolean;
+    data: {
+        loading_order_id: string;
+        count: number;
+        photos: OrderPhoto[];
+    };
 }
 
 export async function getOrders(page: number = 1): Promise<PaginatedResponse<Order>> {
@@ -72,8 +106,8 @@ export async function getOrders(page: number = 1): Promise<PaginatedResponse<Ord
     return response.data;
 }
 
-export async function getOrder(orderId: string): Promise<Order> {
-    const response = await api.get<Order>(`/order/${orderId}`);
+export async function getOrder(orderId: string): Promise<OrderResponse> {
+    const response = await api.get<OrderResponse>(`/order/${orderId}`);
     return response.data;
 }
 
@@ -87,11 +121,7 @@ export async function scheduleOrder(schedule: ScheduleOrderRequest): Promise<Sch
     return response.data;
 }
 
-
-
-
-
-
-
-
-
+export async function getOrderPhotos(orderId: string): Promise<OrderPhotosResponse> {
+    const response = await api.get<OrderPhotosResponse>(`/order/${orderId}/photos`);
+    return response.data;
+}

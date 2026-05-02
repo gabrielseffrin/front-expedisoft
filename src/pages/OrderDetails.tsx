@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
     ArrowLeft,
@@ -15,6 +15,8 @@ import {
     Images,
     Printer,
     Download,
+    X,
+    ZoomIn
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -26,9 +28,11 @@ import {
     CardHeader,
     CardTitle
 } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import CustomAlert from "@/components/ui/custom-alert";
 
-import { getOrder } from "@/services/orders.service";
+import { getOrder, getOrderPhotos } from "@/services/orders.service";
+import type { Order, OrderItem, OrderPackage, OrderPhoto } from "@/services/orders.service";
 import OrderFeedbackCard from "@/components/OrderFeedbackCard";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -43,8 +47,11 @@ export default function OrderDetails() {
     const { orderId } = useParams<{ orderId: string }>();
     const navigate = useNavigate();
 
-    const [order, setOrder] = useState<any>(null);
-    const [packages, setPackages] = useState<any[]>([]);
+    const [order, setOrder] = useState<Order | null>(null);
+    const [packages, setPackages] = useState<OrderPackage[]>([]);
+    const [photos, setPhotos] = useState<OrderPhoto[]>([]);
+    const [photosLoading, setPhotosLoading] = useState<boolean>(false);
+    const [selectedPhoto, setSelectedPhoto] = useState<OrderPhoto | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -52,25 +59,38 @@ export default function OrderDetails() {
         if (!date) return "-";
         try {
             return format(new Date(date), "dd/MM/yyyy HH:mm", { locale: ptBR });
-        } catch (e) {
+        } catch {
             return "-";
         }
     };
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!orderId) return;
+            if (!orderId) {
+                setLoading(false);
+                return;
+            }
 
             setLoading(true);
             try {
                 const response = await getOrder(orderId);
 
                 setOrder(response.data);
-                setPackages(response.data.items?.flatMap((item: any) => item.packages || []) || []);
-            } catch (error) {
+                setPackages(response.data.items?.flatMap((item: OrderItem) => item.packages || []) || []);
+            } catch {
                 setError("Erro ao carregar os dados.");
             } finally {
                 setLoading(false);
+            }
+
+            setPhotosLoading(true);
+            try {
+                const photosResponse = await getOrderPhotos(orderId);
+                setPhotos(photosResponse.data?.photos || []);
+            } catch {
+                setPhotos([]);
+            } finally {
+                setPhotosLoading(false);
             }
         };
 
@@ -227,10 +247,39 @@ export default function OrderDetails() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-0">
-                            <div className="flex flex-col items-center justify-center p-12 text-muted-foreground border-2 border-dashed rounded-lg bg-muted/5">
-                                <Package className="h-10 w-10 mb-2 opacity-10" />
-                                <p className="text-sm">Não há fotos do carregamento disponíveis.</p>
-                            </div>
+                            {photosLoading ? (
+                                <div className="flex flex-col items-center justify-center p-12 text-muted-foreground border-2 border-dashed rounded-lg bg-muted/5">
+                                    <Activity className="h-6 w-6 mb-2 animate-spin" />
+                                    <p className="text-sm">Carregando fotos...</p>
+                                </div>
+                            ) : photos.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center p-12 text-muted-foreground border-2 border-dashed rounded-lg bg-muted/5">
+                                    <Package className="h-10 w-10 mb-2 opacity-10" />
+                                    <p className="text-sm">Não há fotos do carregamento disponíveis.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                    {photos.map((photo, index) => (
+                                        <button
+                                            key={photo.id || index}
+                                            type="button"
+                                            onClick={() => setSelectedPhoto(photo)}
+                                            className="group relative aspect-square w-full overflow-hidden rounded-xl border border-border bg-muted/20 shadow-sm transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                                        >
+                                            <img
+                                                src={`https://drive.google.com/thumbnail?id=${photo.drive_id}&sz=w400`}
+                                                referrerPolicy="no-referrer"
+                                                alt={`Foto ${index + 1} da ordem`}
+                                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                loading="lazy"
+                                            />
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/40">
+                                                <ZoomIn className="h-8 w-8 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100" strokeWidth={1.5} />
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
@@ -267,11 +316,33 @@ export default function OrderDetails() {
                 </div>
 
             </div>
+
+            <Dialog open={Boolean(selectedPhoto)} onOpenChange={(open) => !open && setSelectedPhoto(null)}>
+                <DialogContent className="max-w-[95vw] md:max-w-5xl border-none bg-transparent shadow-none p-0 flex justify-center items-center">
+                    {selectedPhoto && (
+                        <div className="relative flex justify-center items-center w-full h-full">
+                            <img
+                                src={`https://drive.google.com/thumbnail?id=${selectedPhoto.drive_id}&sz=w1600`}
+                                referrerPolicy="no-referrer"
+                                alt="Foto ampliada do carregamento"
+                                className="max-h-[85vh] max-w-full rounded-lg object-contain shadow-2xl ring-1 ring-white/10"
+                            />
+
+                            <button
+                                onClick={() => setSelectedPhoto(null)}
+                                className="absolute -top-4 -right-4 md:-top-6 md:-right-6 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-black/80 focus:outline-none focus:ring-2 focus:ring-white"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
 
-function InfoItem({ label, value, icon: Icon }: { label: string, value: string, icon?: any }) {
+function InfoItem({ label, value, icon: Icon }: { label: string, value: string, icon?: React.ComponentType<{ className?: string }> }) {
     return (
         <div className="flex items-start gap-3">
             {Icon && <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />}

@@ -2,7 +2,7 @@ import {cn} from "@/lib/utils"
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
-import {useState, type SetStateAction, FormEvent} from "react";
+import React, {useState, type SetStateAction, type FormEvent} from "react";
 import {useAuth} from "@/hooks/useAuth";
 import {authService} from "@/services/auth.service";
 import {useNavigate} from "react-router-dom";
@@ -26,9 +26,14 @@ export function LoginForm({
             const {token} = await authService.login({email, password});
             await signIn(token);
             navigate("/dashboard");
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            setError("Usuário ou senha inválidos.");
+            const status = err?.response?.status;
+            if (status === 401 || status === 422) {
+                setError("Usuário ou senha inválidos.");
+            } else {
+                setError("Não foi possível conectar ao servidor. Tente novamente.");
+            }
         }
     }
 
@@ -50,12 +55,6 @@ export function LoginForm({
                 <div className="grid gap-2">
                     <div className="flex items-center">
                         <Label htmlFor="password">Password</Label>
-                        <a
-                            href="#"
-                            className="ml-auto text-sm underline-offset-4 hover:underline"
-                        >
-                            Forgot your password?
-                        </a>
                     </div>
                     <Input id="password" type="password" value={password} onChange={(e: {
                         target: { value: SetStateAction<string>; };

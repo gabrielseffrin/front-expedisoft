@@ -9,7 +9,7 @@ import {
     SidebarMenu, SidebarMenuItem
 } from "@/components/ui/sidebar";
 import { SidebarMenuButton } from "./ui/sidebar";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, Link} from "react-router-dom";
 
 const items = [
     {
@@ -57,10 +57,10 @@ export function AppSidebar() {
                             {items.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild>
-                                        <a href={item.url}>
+                                        <Link to={item.url}>
                                             <item.icon />
                                             <span>{item.title}</span>
-                                        </a>
+                                        </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}

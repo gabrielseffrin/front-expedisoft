@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {ptBR} from "date-fns/locale";
 import {format} from "date-fns";
 import {
@@ -84,21 +84,15 @@ export default function DashboardPage() {
             const response = await getOrders(page);
             const rawData = response.data || [];
 
-            const twoDaysAgo = Date.now() - (2 * 24 * 60 * 60 * 1000);
-
-            const filteredAndSortedData = rawData
-                .filter((order: any) => {
-                    const orderDate = new Date(order.updated_at).getTime();
-                    return orderDate >= twoDaysAgo;
-                })
+            const sortedData = [...rawData]
                 .sort((a: any, b: any) => {
                     return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
                 });
 
-            setOrders(filteredAndSortedData);
+            setOrders(sortedData);
             setTotalPages(response.meta?.last_page || 1);
 
-            const counts = filteredAndSortedData.reduce((acc: any, order: any) => {
+            const counts = rawData.reduce((acc: any, order: any) => {
                 if (order.status) {
                     acc[order.status] = (acc[order.status] || 0) + 1;
                 }
@@ -189,7 +183,7 @@ export default function DashboardPage() {
 
                 <div className="w-full col-span-1 md:col-span-2 lg:col-span-4 mt-6">
                     <div className="flex items-center justify-between mb-4">
-                        <p className="text-sm font-medium">Atividade Rescente</p>
+                        <p className="text-sm font-medium">Atividade Recente</p>
                     </div>
                     <div className="flex items-center justify-between mb-4">
                         <p className="text-sm text-muted-foreground">Últimas ordens finalizadas ou agendadas</p>

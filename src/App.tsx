@@ -43,7 +43,7 @@ function AppRoutes() {
                 path="/orders"
                 element={
                     <PrivateRoute>
-                        <MainLayout title="Orderns de Carregamento" description="Agendar e gerenciar ordens">
+                        <MainLayout title="Ordens de Carregamento" description="Agendar e gerenciar ordens">
                             <OrdersPage />
                         </MainLayout>
                     </PrivateRoute>

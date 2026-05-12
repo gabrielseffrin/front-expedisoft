@@ -1,4 +1,4 @@
-import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.js";
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 import {AlertCircleIcon} from "lucide-react";
 
 export default function CustomAlert({variant = "default", message, error}) {

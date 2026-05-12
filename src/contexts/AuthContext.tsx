@@ -16,7 +16,7 @@ interface AuthContextType {
     signOut: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -44,8 +44,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function signIn(token: string) {
         localStorage.setItem('token', token);
-        const userData = await authService.getCurrentUser();
-        setUser(userData);
+        try {
+            const userData = await authService.getCurrentUser();
+            setUser(userData);
+        } catch (error) {
+            localStorage.removeItem('token');
+            setUser(null);
+            throw error;
+        }
     }
 
     async function signOut() {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
     ArrowLeft,
@@ -302,11 +302,11 @@ export default function OrderDetails() {
                             </div>
 
                             <div className="pt-6 grid grid-cols-1 gap-2">
-                                <Button className="w-full gap-2">
+                                <Button className="w-full gap-2" disabled title="Em breve">
                                     <Printer className="h-4 w-4" />
                                     Imprimir Ordem
                                 </Button>
-                                <Button variant="outline" className="w-full gap-2">
+                                <Button variant="outline" className="w-full gap-2" disabled title="Em breve">
                                     <Download className="h-4 w-4" />
                                     Exportar CSV
                                 </Button>

@@ -72,10 +72,18 @@ interface Dock {
     name: string;
 }
 
+interface PaginatedMeta {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    [key: string]: unknown;
+}
+
 interface PaginatedResponse<T> {
     data: T[];
     links: Record<string, unknown>;
-    meta: Record<string, unknown>;
+    meta: PaginatedMeta;
 }
 
 export interface OrderPhoto {
@@ -111,8 +119,8 @@ export async function getOrder(orderId: string): Promise<OrderResponse> {
     return response.data;
 }
 
-export async function getDocks(): Promise<Dock> {
-    const response = await api.get<Dock>(`/docks`);
+export async function getDocks(): Promise<Dock[]> {
+    const response = await api.get<Dock[]>(`/docks`);
     return response.data;
 }
 

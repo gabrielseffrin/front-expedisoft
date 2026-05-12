@@ -36,7 +36,7 @@ export default function OrdersPage() {
     const [orders, setOrders] = useState<any>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [operators, setOperators] = useState([]);
+    const [operators, setOperators] = useState<any[]>([]);
     const [order, setOrder] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +46,7 @@ export default function OrdersPage() {
     const [scheduledTime, setScheduledTime] = useState<string>("12:00");
     const [operator, setOperator] = useState<string>('');
     const [dock, setDock] = useState<string>('');
-    const [docks, setDocks] = useState<any>([]);
+    const [docks, setDocks] = useState<any[]>([]);
 
     const [loading, setLoading] = useState(false);
 
@@ -64,28 +64,28 @@ export default function OrdersPage() {
         {
             accessorKey: 'issue_date',
             header: 'Data',
-            cell: ({row}: string) => formatDate(row.getValue('issue_date'))
+            cell: ({row}: any) => formatDate(row.getValue('issue_date'))
         },
         {
             accessorKey: 'scheduled_at',
             header: 'Data Agendada',
-            cell: ({row}: string) => formatDate(row.getValue('scheduled_at'))
+            cell: ({row}: any) => formatDate(row.getValue('scheduled_at'))
         },
         {
             accessorKey: 'started_at',
             header: 'Data Início',
-            cell: ({row}: string) => formatDate(row.getValue('started_at'))
+            cell: ({row}: any) => formatDate(row.getValue('started_at'))
         },
         {
             accessorKey: 'completed_at',
             header: 'Data Conclusão',
-            cell: ({row}: string) => formatDate(row.getValue('completed_at'))
+            cell: ({row}: any) => formatDate(row.getValue('completed_at'))
         },
         {accessorKey: 'operator', header: 'Operador'},
         {
             accessorKey: 'status',
             header: 'Status',
-            cell: ({row}: string) => {
+            cell: ({row}: any) => {
                 const status = row.getValue('status') as string;
                 const statusConfig: Record<string, { label: string; className: string }> = {
                     pending: {label: 'Pendente', className: 'bg-red-100 text-red-800'},
@@ -105,7 +105,7 @@ export default function OrdersPage() {
         {
             id: "actions",
             header: "Ações",
-            cell: ({row}: string) => {
+            cell: ({row}: any) => {
                 const orderId = row.original.id;
                 const status = row.getValue('status') as string;
 
@@ -198,6 +198,15 @@ export default function OrdersPage() {
         try {
             if (!scheduledAt || !selectedOrderId) return;
 
+            if (!dock) {
+                setError("Selecione uma doca de carregamento.");
+                return;
+            }
+            if (!operator) {
+                setError("Selecione um operador.");
+                return;
+            }
+
             const [hours, minutes] = scheduledTime.split(':');
             const finalDateTime = new Date(scheduledAt);
             finalDateTime.setHours(parseInt(hours), parseInt(minutes));
@@ -231,7 +240,6 @@ export default function OrdersPage() {
     }
 
     useEffect(() => {
-        fetchOrders();
         fetchOperators();
         fechDocks();
     }, []);
@@ -336,7 +344,11 @@ export default function OrdersPage() {
 
                             <div className="flex flex-col gap-2">
                                 <Label htmlFor="doca">Doca de Carregamento</Label>
-                                <select className="flex h-9 w-full rounded-md border border-input bg-background">
+                                <select
+                                    id="doca"
+                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    value={dock}
+                                    onChange={(e) => setDock(e.target.value)}>
                                     <option value="">Selecione uma doca</option>
                                     {docks?.map((doca: any) => (
                                         <option key={doca.id} value={doca.id}>{doca.dock_code}</option>

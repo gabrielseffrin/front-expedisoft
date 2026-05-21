@@ -9,7 +9,7 @@ import DashboardPage from "@/pages/Dashboards";
 import OrdersPage from "@/pages/Orders";
 import OrderDetails from "@/pages/OrderDetails";
 
-function PrivateRoute({children}: { children: JSX.Element }) {
+export function PrivateRoute({children}: { children: JSX.Element }) {
     const {signed, loading} = useAuth();
 
     if (loading) {
@@ -23,7 +23,7 @@ function PrivateRoute({children}: { children: JSX.Element }) {
     return children;
 }
 
-function AppRoutes() {
+export function AppRoutes() {
     return (
         <Routes>
             <Route path="/" element={<LoginPage/>}/>

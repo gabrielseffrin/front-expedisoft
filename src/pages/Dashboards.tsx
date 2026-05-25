@@ -1,6 +1,6 @@
-import {useEffect, useState} from "react";
-import {ptBR} from "date-fns/locale";
-import {format} from "date-fns";
+import { useEffect, useState } from "react";
+import { ptBR } from "date-fns/locale";
+import { format } from "date-fns";
 import {
     Card,
     CardContent,
@@ -8,61 +8,103 @@ import {
     CardTitle
 } from "@/components/ui/card";
 import CustomAlert from "@/components/ui/custom-alert";
-import {Package, Activity, AlertCircle, CheckCircle2} from "lucide-react";
-import {DataTable} from "@/components/ui/data-table";
-import {getOrders} from "@/services/orders.service";
+import { Package, Activity, AlertCircle, CheckCircle2, RefreshCw, TrendingUp, Clock } from "lucide-react";
+import { DataTable } from "@/components/ui/data-table";
+import { getOrders } from "@/services/orders.service";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 const formatDate = (date: string | null) => {
     if (!date) return "-";
-    return format(new Date(date), "dd/MM/yyyy HH:mm", {locale: ptBR});
+    return format(new Date(date), "dd/MM/yyyy HH:mm", { locale: ptBR });
 };
 
 const columns = [
     {
         id: "id",
-        header: "ID",
-        cell: ({ row }: any) => {
-            return <span>{row.index + 1}</span>;
-        },
+        header: "#",
+        cell: ({ row }: any) => (
+            <span className="text-muted-foreground font-mono text-xs">{row.index + 1}</span>
+        ),
     },
     {
         accessorKey: "external_id",
-        header: "Ordem"
+        header: "Ordem",
+        cell: ({ row }: any) => (
+            <span className="font-medium text-sm">{row.getValue("external_id")}</span>
+        ),
     },
     {
         accessorKey: "customer",
-        header: "Cliente"
+        header: "Cliente",
+        cell: ({ row }: any) => (
+            <span className="text-sm">{row.getValue("customer")}</span>
+        ),
     },
     {
-        accessorKey: 'status',
-        header: 'Status',
-        cell: ({row}: any) => {
-            const status = row.getValue('status') as string;
-            const statusConfig: Record<string, { label: string; className: string }> = {
-                pending: {label: 'Pendente', className: 'bg-red-100 text-red-800'},
-                completed: {label: 'Concluído', className: 'bg-green-100 text-green-800'},
-                divergence: {label: 'Divergencia', className: 'bg-red-800 text-red-100'},
-                scheduled: {label: 'Agendada', className: 'bg-blue-100 text-blue-800'},
-                in_progress: {label: 'Carregando', className: 'bg-blue-100 text-blue-800'},
-            };
-            const config = statusConfig[status] ?? {label: status, className: 'bg-gray-100 text-gray-800'};
-            return (
-                <span className={`px-2 py-1 rounded text-sm font-medium ${config.className}`}>
-                    {config.label}
-                </span>
-            );
-        },
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }: any) => (
+            <StatusBadge status={row.getValue("status")} />
+        ),
     },
     {
         accessorKey: "operator",
-        header: "Operador"
+        header: "Operador",
+        cell: ({ row }: any) => (
+            <span className="text-sm text-muted-foreground">{row.getValue("operator") || "-"}</span>
+        ),
     },
     {
         accessorKey: "updated_at",
         header: "Atualizado",
-        cell: ({row}: any) => formatDate(row.getValue('updated_at'))
-    }
+        cell: ({ row }: any) => (
+            <span className="text-xs text-muted-foreground">{formatDate(row.getValue("updated_at"))}</span>
+        ),
+    },
 ];
+
+interface KpiCardProps {
+    title: string;
+    value: number;
+    subtitle: string;
+    icon: React.ComponentType<{ className?: string }>;
+    colorClass: string;
+    bgClass: string;
+    borderClass: string;
+    isLoading: boolean;
+}
+
+function KpiCard({ title, value, subtitle, icon: Icon, colorClass, bgClass, borderClass, isLoading }: KpiCardProps) {
+    return (
+        <Card className={cn("border-t-4 transition-shadow hover:shadow-md", borderClass)}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+                <div className={cn("flex items-center justify-center w-9 h-9 rounded-xl", bgClass)}>
+                    <Icon className={cn("h-4 w-4", colorClass)} />
+                </div>
+            </CardHeader>
+            <CardContent>
+                {isLoading ? (
+                    <>
+                        <Skeleton className="h-8 w-16 mb-2" />
+                        <Skeleton className="h-3 w-24" />
+                    </>
+                ) : (
+                    <>
+                        <div className="flex items-end gap-2">
+                            <div className={cn("text-3xl font-bold", colorClass)}>{value}</div>
+                            <TrendingUp className="h-4 w-4 text-muted-foreground mb-1 opacity-50" />
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
+                    </>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
 
 export default function DashboardPage() {
     const [orders, setOrders] = useState<any[]>([]);
@@ -79,23 +121,19 @@ export default function DashboardPage() {
 
     const fetchOrders = async () => {
         setLoading(true);
-
         try {
             const response = await getOrders(page);
             const rawData = response.data || [];
 
-            const sortedData = [...rawData]
-                .sort((a: any, b: any) => {
-                    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
-                });
+            const sortedData = [...rawData].sort((a: any, b: any) =>
+                new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+            );
 
             setOrders(sortedData);
             setTotalPages(response.meta?.last_page || 1);
 
             const counts = rawData.reduce((acc: any, order: any) => {
-                if (order.status) {
-                    acc[order.status] = (acc[order.status] || 0) + 1;
-                }
+                if (order.status) acc[order.status] = (acc[order.status] || 0) + 1;
                 return acc;
             }, {});
 
@@ -103,17 +141,14 @@ export default function DashboardPage() {
             setOrdersInProgress(counts["in_progress"] || 0);
             setCompletedToday(counts["completed"] || 0);
             setDivergences(counts["divergence"] || 0);
-
-        } catch (error) {
+        } catch {
             setError("Não foi possível carregar as ordens.");
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchOrders();
-    }, [page]);
+    useEffect(() => { fetchOrders(); }, [page]);
 
     useEffect(() => {
         if (error) {
@@ -122,72 +157,86 @@ export default function DashboardPage() {
         }
     }, [error]);
 
+    const kpiCards = [
+        {
+            title: "Agendamentos",
+            value: scheduledToday,
+            subtitle: "Ordens agendadas",
+            icon: Clock,
+            colorClass: "text-blue-600",
+            bgClass: "bg-blue-50",
+            borderClass: "border-t-blue-500",
+        },
+        {
+            title: "Em Andamento",
+            value: ordersInProgress,
+            subtitle: "Em carregamento",
+            icon: Activity,
+            colorClass: "text-indigo-600",
+            bgClass: "bg-indigo-50",
+            borderClass: "border-t-indigo-500",
+        },
+        {
+            title: "Divergências",
+            value: divergences,
+            subtitle: "Requerem atenção",
+            icon: AlertCircle,
+            colorClass: "text-red-600",
+            bgClass: "bg-red-50",
+            borderClass: "border-t-red-500",
+        },
+        {
+            title: "Concluídos",
+            value: completedToday,
+            subtitle: "Finalizados com sucesso",
+            icon: CheckCircle2,
+            colorClass: "text-emerald-600",
+            bgClass: "bg-emerald-50",
+            borderClass: "border-t-emerald-500",
+        },
+    ];
+
     return (
-        <div className="mt-8">
+        <div className="space-y-6">
             {error && (
-                <CustomAlert variant="destructive" message={"Erro ao processar solicitação."} error={error}/>
+                <CustomAlert variant="destructive" message="Erro ao processar solicitação." error={error} />
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Carregamentos Hoje</CardTitle>
-                        <Package className="h-4 w-4 text-muted-foreground"/>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{scheduledToday}</div>
-                        <p className="mt-3.5 text-xs text-muted-foreground">
-                            Agendadas para hoje
-                        </p>
-                    </CardContent>
-                </Card>
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {kpiCards.map((card) => (
+                    <KpiCard key={card.title} {...card} isLoading={loading} />
+                ))}
+            </div>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Em Andamento</CardTitle>
-                        <Activity className="h-4 w-4 text-muted-foreground"/>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{ordersInProgress}</div>
-                        <p className="mt-3.5 text-xs text-muted-foreground">
-                            Em carregamento
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Divergências</CardTitle>
-                        <AlertCircle className="h-4 w-4 text-red-500"/>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-red-600">{divergences}</div>
-                        <p className="mt-3.5 text-xs text-muted-foreground">
-                            Requerem atenção
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Concluídos</CardTitle>
-                        <CheckCircle2 className="h-4 w-4 text-emerald-500"/>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{completedToday}</div>
-                        <p className="mt-3.5 text-xs text-muted-foreground">
-                            Finalizados hoje
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <div className="w-full col-span-1 md:col-span-2 lg:col-span-4 mt-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <p className="text-sm font-medium">Atividade Recente</p>
+            {/* Tabela de Atividade Recente */}
+            <Card>
+                <CardHeader className="border-b pb-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10">
+                                <Package className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-base font-semibold">Atividade Recente</CardTitle>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                    Últimas ordens atualizadas no sistema
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 text-xs"
+                            onClick={fetchOrders}
+                            disabled={loading}
+                        >
+                            <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
+                            Atualizar
+                        </Button>
                     </div>
-                    <div className="flex items-center justify-between mb-4">
-                        <p className="text-sm text-muted-foreground">Últimas ordens finalizadas ou agendadas</p>
-                    </div>
+                </CardHeader>
+                <CardContent className="pt-4 px-0 pb-0">
                     <DataTable
                         columns={columns}
                         data={orders}
@@ -196,8 +245,8 @@ export default function DashboardPage() {
                         onPageChange={setPage}
                         isLoading={loading}
                     />
-                </div>
-            </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }

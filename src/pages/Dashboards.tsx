@@ -8,7 +8,7 @@ import {
     CardHeader,
     CardTitle
 } from "@/components/ui/card";
-import { Package, Activity, AlertCircle, CheckCircle2, RefreshCw, TrendingUp, Clock, Printer, Download, BarChart2 } from "lucide-react";
+import { Package, Activity, AlertCircle, CheckCircle2, RefreshCw, TrendingUp, Clock, Printer, Download } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { getOrders } from "@/services/orders.service";
 import type { Order } from "@/services/orders.service";
@@ -19,14 +19,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
-    BarChart,
-    Bar,
+    AreaChart,
+    Area,
     XAxis,
     YAxis,
     CartesianGrid,
     Tooltip as RechartsTooltip,
     ResponsiveContainer,
-    Cell,
+    Legend,
 } from "recharts";
 
 const formatDate = (date: string | null) => {
@@ -131,16 +131,8 @@ export default function DashboardPage() {
 
     const [loading, setLoading] = useState<boolean>(false);
 
-    // Dados para o gráfico de distribuição por status
-    const statusChartData = [
-        { name: "Pendente",   key: "pending",     value: 0, color: "#94a3b8" },
-        { name: "Agendada",   key: "scheduled",   value: 0, color: "#3b82f6" },
-        { name: "Carregando", key: "in_progress", value: 0, color: "#6366f1" },
-        { name: "Concluída",  key: "completed",   value: 0, color: "#059669" },
-        { name: "Divergência",key: "divergence",  value: 0, color: "#dc2626" },
-    ];
-
-    const [chartData, setChartData] = useState(statusChartData);
+    // Trend: ordens agrupadas por dia (últimos 14 dias baseado em updated_at)
+    const [trendData, setTrendData] = useState<{ dia: string; Concluídas: number; Divergências: number }[]>([]);
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -166,9 +158,29 @@ export default function DashboardPage() {
             setCompletedToday(counts["completed"] || 0);
             setDivergences(counts["divergence"] || 0);
 
-            setChartData(prev =>
-                prev.map(item => ({ ...item, value: counts[item.key] || 0 }))
-            );
+            // Gera os últimos 14 dias
+            const today = new Date();
+            const days = Array.from({ length: 14 }, (_, i) => {
+                const d = new Date(today);
+                d.setDate(today.getDate() - (13 - i));
+                return {
+                    date: d.toISOString().slice(0, 10),
+                    dia: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+                    "Concluídas": 0,
+                    "Divergências": 0,
+                };
+            });
+
+            // Agrupa ordens por dia usando updated_at
+            rawData.forEach(order => {
+                const dateStr = (order.updated_at ?? order.updatedAt ?? '').slice(0, 10);
+                const slot = days.find(d => d.date === dateStr);
+                if (!slot) return;
+                if (order.status === 'completed') slot["Concluídas"]++;
+                if (order.status === 'divergence') slot["Divergências"]++;
+            });
+
+            setTrendData(days.map(({ dia, "Concluídas": c, "Divergências": d }) => ({ dia, "Concluídas": c, "Divergências": d })));
         } catch {
             toast.error("Não foi possível carregar as ordens.");
         } finally {
@@ -229,42 +241,52 @@ export default function DashboardPage() {
                 ))}
             </div>
 
-            {/* Gráfico de Distribuição por Status */}
+            {/* Gráfico de Tendência de Atividade */}
             <div className="px-6">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 pt-5 px-5">
                         <div className="flex items-center gap-3">
                             <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10">
-                                <BarChart2 className="h-4 w-4 text-primary" />
+                                <TrendingUp className="h-4 w-4 text-primary" />
                             </div>
                             <div>
-                                <CardTitle className="text-base font-semibold text-foreground">Distribuição por Status</CardTitle>
-                                <p className="text-xs text-muted-foreground mt-0.5">Visão geral das ordens na base</p>
+                                <CardTitle className="text-base font-semibold text-foreground">Tendência de Atividade</CardTitle>
+                                <p className="text-xs text-muted-foreground mt-0.5">Ordens concluídas e divergências nos últimos 14 dias</p>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent className="px-5 pb-5">
                         {loading ? (
-                            <Skeleton className="h-48 w-full rounded-lg" />
+                            <Skeleton className="h-52 w-full rounded-lg" />
                         ) : (
-                            <ResponsiveContainer width="100%" height={200}>
-                                <BarChart data={chartData} barCategoryGap="30%" barGap={4}>
+                            <ResponsiveContainer width="100%" height={220}>
+                                <AreaChart data={trendData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="gradCompleted" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#059669" stopOpacity={0.15} />
+                                            <stop offset="95%" stopColor="#059669" stopOpacity={0} />
+                                        </linearGradient>
+                                        <linearGradient id="gradDivergence" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#dc2626" stopOpacity={0.15} />
+                                            <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                                     <XAxis
-                                        dataKey="name"
-                                        tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                                        dataKey="dia"
+                                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                                         axisLine={false}
                                         tickLine={false}
+                                        interval={1}
                                     />
                                     <YAxis
                                         allowDecimals={false}
-                                        tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                                         axisLine={false}
                                         tickLine={false}
-                                        width={28}
+                                        width={24}
                                     />
                                     <RechartsTooltip
-                                        cursor={{ fill: "hsl(var(--muted))", radius: 4 }}
                                         contentStyle={{
                                             background: "hsl(var(--card))",
                                             border: "1px solid hsl(var(--border))",
@@ -272,14 +294,32 @@ export default function DashboardPage() {
                                             fontSize: 12,
                                             color: "hsl(var(--foreground))",
                                         }}
-                                        formatter={(value: number) => [value, "Ordens"]}
+                                        cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1 }}
                                     />
-                                    <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={56}>
-                                        {chartData.map((entry) => (
-                                            <Cell key={entry.key} fill={entry.color} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
+                                    <Legend
+                                        wrapperStyle={{ fontSize: 12, paddingTop: 12 }}
+                                        iconType="circle"
+                                        iconSize={8}
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="Concluídas"
+                                        stroke="#059669"
+                                        strokeWidth={2}
+                                        fill="url(#gradCompleted)"
+                                        dot={false}
+                                        activeDot={{ r: 4, strokeWidth: 0 }}
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="Divergências"
+                                        stroke="#dc2626"
+                                        strokeWidth={2}
+                                        fill="url(#gradDivergence)"
+                                        dot={false}
+                                        activeDot={{ r: 4, strokeWidth: 0 }}
+                                    />
+                                </AreaChart>
                             </ResponsiveContainer>
                         )}
                     </CardContent>

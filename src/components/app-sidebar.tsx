@@ -65,7 +65,7 @@ export function AppSidebar() {
                         Menu
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
-                        <SidebarMenu className="gap-0.5 px-2">
+                        <SidebarMenu className="gap-0.5">
                             {items.map((item) => {
                                 const isActive = location.pathname === item.url;
                                 return (
@@ -81,7 +81,7 @@ export function AppSidebar() {
                                                     : "text-sidebar-foreground/65 hover:text-sidebar-foreground"
                                             )}
                                         >
-                                            <Link to={item.url} className="flex items-center gap-3">
+                                            <Link to={item.url}>
                                                 <item.icon
                                                     className={cn(
                                                         "h-4 w-4 shrink-0",
@@ -100,7 +100,7 @@ export function AppSidebar() {
             </SidebarContent>
 
             {/* ── Rodapé ── */}
-            <SidebarFooter className="border-t border-sidebar-border p-3">
+            <SidebarFooter className="border-t border-sidebar-border p-2">
                 <SidebarMenu>
                     {/* Info do usuário */}
                     <SidebarMenuItem>

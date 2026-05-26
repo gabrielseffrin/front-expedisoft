@@ -1,6 +1,6 @@
 import { api } from './api';
 
-interface UserResponse {
+export interface UserResponse {
     id: string;
     name: string;
     email: string;

@@ -8,15 +8,26 @@ import {
     CardHeader,
     CardTitle
 } from "@/components/ui/card";
-import { Package, Activity, AlertCircle, CheckCircle2, RefreshCw, TrendingUp, Clock, Printer, Download } from "lucide-react";
+import { Package, Activity, AlertCircle, CheckCircle2, RefreshCw, TrendingUp, Clock, Printer, Download, BarChart2 } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { getOrders } from "@/services/orders.service";
+import type { Order } from "@/services/orders.service";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip as RechartsTooltip,
+    ResponsiveContainer,
+    Cell,
+} from "recharts";
 
 const formatDate = (date: string | null) => {
     if (!date) return "-";
@@ -109,31 +120,43 @@ function KpiCard({ title, value, subtitle, icon: Icon, colorClass, bgClass, bord
 }
 
 export default function DashboardPage() {
-    const [orders, setOrders] = useState<any[]>([]);
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [page, setPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(1);
 
-    const [scheduledToday, setScheduledToday] = useState(0);
-    const [ordersInProgress, setOrdersInProgress] = useState(0);
-    const [divergences, setDivergences] = useState(0);
-    const [completedToday, setCompletedToday] = useState(0);
+    const [scheduledToday, setScheduledToday] = useState<number>(0);
+    const [ordersInProgress, setOrdersInProgress] = useState<number>(0);
+    const [divergences, setDivergences] = useState<number>(0);
+    const [completedToday, setCompletedToday] = useState<number>(0);
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
+
+    // Dados para o gráfico de distribuição por status
+    const statusChartData = [
+        { name: "Pendente",   key: "pending",     value: 0, color: "#94a3b8" },
+        { name: "Agendada",   key: "scheduled",   value: 0, color: "#3b82f6" },
+        { name: "Carregando", key: "in_progress", value: 0, color: "#6366f1" },
+        { name: "Concluída",  key: "completed",   value: 0, color: "#059669" },
+        { name: "Divergência",key: "divergence",  value: 0, color: "#dc2626" },
+    ];
+
+    const [chartData, setChartData] = useState(statusChartData);
 
     const fetchOrders = async () => {
         setLoading(true);
         try {
             const response = await getOrders(page);
-            const rawData = response.data || [];
+            const rawData: Order[] = response.data || [];
 
-            const sortedData = [...rawData].sort((a: any, b: any) =>
-                new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+            const sortedData = [...rawData].sort((a, b) =>
+                new Date(b.updated_at ?? b.updatedAt ?? 0).getTime() -
+                new Date(a.updated_at ?? a.updatedAt ?? 0).getTime()
             );
 
             setOrders(sortedData);
             setTotalPages(response.meta?.last_page || 1);
 
-            const counts = rawData.reduce((acc: any, order: any) => {
+            const counts = rawData.reduce<Record<string, number>>((acc, order) => {
                 if (order.status) acc[order.status] = (acc[order.status] || 0) + 1;
                 return acc;
             }, {});
@@ -142,6 +165,10 @@ export default function DashboardPage() {
             setOrdersInProgress(counts["in_progress"] || 0);
             setCompletedToday(counts["completed"] || 0);
             setDivergences(counts["divergence"] || 0);
+
+            setChartData(prev =>
+                prev.map(item => ({ ...item, value: counts[item.key] || 0 }))
+            );
         } catch {
             toast.error("Não foi possível carregar as ordens.");
         } finally {
@@ -200,6 +227,63 @@ export default function DashboardPage() {
                 {kpiCards.map((card) => (
                     <KpiCard key={card.title} {...card} isLoading={loading} />
                 ))}
+            </div>
+
+            {/* Gráfico de Distribuição por Status */}
+            <div className="px-6">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 pt-5 px-5">
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10">
+                                <BarChart2 className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-base font-semibold text-foreground">Distribuição por Status</CardTitle>
+                                <p className="text-xs text-muted-foreground mt-0.5">Visão geral das ordens na base</p>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="px-5 pb-5">
+                        {loading ? (
+                            <Skeleton className="h-48 w-full rounded-lg" />
+                        ) : (
+                            <ResponsiveContainer width="100%" height={200}>
+                                <BarChart data={chartData} barCategoryGap="30%" barGap={4}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                                    <XAxis
+                                        dataKey="name"
+                                        tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                    />
+                                    <YAxis
+                                        allowDecimals={false}
+                                        tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        width={28}
+                                    />
+                                    <RechartsTooltip
+                                        cursor={{ fill: "hsl(var(--muted))", radius: 4 }}
+                                        contentStyle={{
+                                            background: "hsl(var(--card))",
+                                            border: "1px solid hsl(var(--border))",
+                                            borderRadius: 8,
+                                            fontSize: 12,
+                                            color: "hsl(var(--foreground))",
+                                        }}
+                                        formatter={(value: number) => [value, "Ordens"]}
+                                    />
+                                    <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={56}>
+                                        {chartData.map((entry) => (
+                                            <Cell key={entry.key} fill={entry.color} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Tabela de Atividade Recente */}

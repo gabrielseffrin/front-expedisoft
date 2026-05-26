@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { getDocks, getOrder, getOrders, scheduleOrder } from "@/services/orders.service";
+import type { Order, Dock } from "@/services/orders.service";
+import type { UserResponse } from "@/services/user.service";
 import { DataTable } from "@/components/ui/data-table";
 import { CalendarIcon, Clock, Eye, Calendar, User, Warehouse, MoreHorizontal, Printer, Download, Filter } from "lucide-react";
 import CustomAlert from "@/components/ui/custom-alert";
@@ -45,20 +47,20 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function OrdersPage() {
-    const [orders, setOrders] = useState<any>([]);
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [operators, setOperators] = useState<any[]>([]);
-    const [order, setOrder] = useState<any>(null);
-    const [loading, setLoading] = useState(false);
-    const [modalOpen, setModalOpen] = useState(false);
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [page, setPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(1);
+    const [operators, setOperators] = useState<UserResponse[]>([]);
+    const [order, setOrder] = useState<Order | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
     const [scheduledAt, setScheduledAt] = useState<Date | undefined>(undefined);
     const [scheduledTime, setScheduledTime] = useState<string>("12:00");
     const [operator, setOperator] = useState<string>('');
     const [dock, setDock] = useState<string>('');
-    const [docks, setDocks] = useState<any[]>([]);
+    const [docks, setDocks] = useState<Dock[]>([]);
 
     const navigate = useNavigate();
 
@@ -128,7 +130,7 @@ export default function OrdersPage() {
             id: "actions",
             header: "Ações",
             enableSorting: false,
-            cell: ({ row }: any) => {
+            cell: ({ row }: { row: { original: Order; getValue: (key: string) => unknown } }) => {
                 const orderId = row.original.id;
                 const status = row.getValue('status') as string;
 
@@ -260,7 +262,7 @@ export default function OrdersPage() {
 
     const filteredOrders = React.useMemo(() => {
         if (statusFilter === "all") return orders;
-        return orders.filter((order: any) => order.status === statusFilter);
+        return orders.filter((o: Order) => o.status === statusFilter);
     }, [orders, statusFilter]);
 
     return (
@@ -419,7 +421,7 @@ export default function OrdersPage() {
                                     onChange={(e) => setOperator(e.target.value)}
                                 >
                                     <option value="">Selecione um operador</option>
-                                    {operators?.map((op: any) => (
+                                    {operators.map((op) => (
                                         <option key={op.id} value={op.id}>{op.name}</option>
                                     ))}
                                 </select>
@@ -438,8 +440,8 @@ export default function OrdersPage() {
                                     onChange={(e) => setDock(e.target.value)}
                                 >
                                     <option value="">Selecione uma doca</option>
-                                    {docks?.map((doca: any) => (
-                                        <option key={doca.id} value={doca.id}>{doca.dock_code}</option>
+                                    {docks.map((doca) => (
+                                        <option key={doca.id} value={doca.id}>{doca.name}</option>
                                     ))}
                                 </select>
                             </div>

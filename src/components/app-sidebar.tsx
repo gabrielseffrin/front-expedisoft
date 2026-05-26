@@ -11,7 +11,7 @@ import {
     SidebarMenuItem,
     SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import newLogo from "@/images/new-logo.webp";
 import { cn } from "@/lib/utils";
 
@@ -71,25 +71,23 @@ export function AppSidebar() {
                                 return (
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton
-                                            asChild
                                             tooltip={item.title}
                                             isActive={isActive}
+                                            onClick={() => navigate(item.url)}
                                             className={cn(
-                                                "rounded-lg transition-all",
+                                                "rounded-lg transition-all cursor-pointer",
                                                 isActive
                                                     ? "bg-sidebar-primary/20 text-sidebar-primary hover:bg-sidebar-primary/20 hover:text-sidebar-primary"
                                                     : "text-sidebar-foreground/65 hover:text-sidebar-foreground"
                                             )}
                                         >
-                                            <Link to={item.url}>
-                                                <item.icon
-                                                    className={cn(
-                                                        "h-4 w-4 shrink-0",
-                                                        isActive ? "text-sidebar-primary" : "text-sidebar-foreground/45"
-                                                    )}
-                                                />
-                                                <span className="font-medium text-sm">{item.title}</span>
-                                            </Link>
+                                            <item.icon
+                                                className={cn(
+                                                    "h-4 w-4 shrink-0",
+                                                    isActive ? "text-sidebar-primary" : "text-sidebar-foreground/45"
+                                                )}
+                                            />
+                                            <span className="font-medium text-sm">{item.title}</span>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 );

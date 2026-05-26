@@ -441,7 +441,7 @@ export default function OrdersPage() {
                                 >
                                     <option value="">Selecione uma doca</option>
                                     {docks.map((doca) => (
-                                        <option key={doca.id} value={doca.id}>{doca.name}</option>
+                                        <option key={doca.id} value={doca.id}>{doca.dock_code ?? doca.name}</option>
                                     ))}
                                 </select>
                             </div>

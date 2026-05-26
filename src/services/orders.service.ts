@@ -73,7 +73,8 @@ interface ScheduleOrderRequest {
 
 export interface Dock {
     id: string;
-    name: string;
+    name?: string;
+    dock_code?: string;
 }
 
 interface PaginatedMeta {

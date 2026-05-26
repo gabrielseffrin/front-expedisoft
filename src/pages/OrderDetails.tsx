@@ -436,11 +436,18 @@ export default function OrderDetails() {
                                             className="group relative aspect-square w-full overflow-hidden rounded-xl border border-border bg-muted/20 shadow-sm transition-all hover:shadow-md hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                                         >
                                             <img
-                                                src={`https://drive.google.com/thumbnail?id=${photo.drive_id}&sz=w400`}
+                                                src={photo.url || `https://drive.google.com/thumbnail?id=${photo.drive_id}&sz=w400`}
                                                 referrerPolicy="no-referrer"
                                                 alt={`Foto ${index + 1} da ordem`}
                                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                 loading="lazy"
+                                                onError={(e) => {
+                                                    const img = e.currentTarget;
+                                                    if (!img.dataset.fallback) {
+                                                        img.dataset.fallback = '1';
+                                                        img.src = `https://drive.google.com/thumbnail?id=${photo.drive_id}&sz=w400`;
+                                                    }
+                                                }}
                                             />
                                             <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/40">
                                                 <ZoomIn className="h-7 w-7 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100" strokeWidth={1.5} />
@@ -512,10 +519,17 @@ export default function OrderDetails() {
                     {selectedPhoto && (
                         <div className="relative flex justify-center items-center w-full h-full">
                             <img
-                                src={`https://drive.google.com/thumbnail?id=${selectedPhoto.drive_id}&sz=w1600`}
+                                src={selectedPhoto.url || `https://drive.google.com/thumbnail?id=${selectedPhoto.drive_id}&sz=w1600`}
                                 referrerPolicy="no-referrer"
                                 alt="Foto ampliada do carregamento"
                                 className="max-h-[85vh] max-w-full rounded-2xl object-contain shadow-2xl ring-1 ring-white/10"
+                                onError={(e) => {
+                                    const img = e.currentTarget;
+                                    if (!img.dataset.fallback) {
+                                        img.dataset.fallback = '1';
+                                        img.src = `https://drive.google.com/thumbnail?id=${selectedPhoto.drive_id}&sz=w1600`;
+                                    }
+                                }}
                             />
                             <button
                                 onClick={() => setSelectedPhoto(null)}

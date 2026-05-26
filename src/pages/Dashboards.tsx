@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import React from "react";
 import { ptBR } from "date-fns/locale";
 import { format } from "date-fns";
 import {
@@ -79,26 +80,26 @@ interface KpiCardProps {
 
 function KpiCard({ title, value, subtitle, icon: Icon, colorClass, bgClass, borderClass, isLoading }: KpiCardProps) {
     return (
-        <Card className={cn("border-t-4 transition-shadow hover:shadow-md", borderClass)}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className={cn("border-t-4 transition-all hover:shadow-md hover:-translate-y-0.5", borderClass)}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 pt-5 px-5">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-                <div className={cn("flex items-center justify-center w-9 h-9 rounded-xl", bgClass)}>
-                    <Icon className={cn("h-4 w-4", colorClass)} />
+                <div className={cn("flex items-center justify-center w-10 h-10 rounded-xl", bgClass)}>
+                    <Icon className={cn("h-5 w-5", colorClass)} />
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-5 pb-5">
                 {isLoading ? (
                     <>
-                        <Skeleton className="h-8 w-16 mb-2" />
-                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-9 w-16 mb-2" />
+                        <Skeleton className="h-3 w-28" />
                     </>
                 ) : (
                     <>
                         <div className="flex items-end gap-2">
-                            <div className={cn("text-3xl font-bold", colorClass)}>{value}</div>
-                            <TrendingUp className="h-4 w-4 text-muted-foreground mb-1 opacity-50" />
+                            <div className={cn("text-4xl font-bold", colorClass)}>{value}</div>
+                            <TrendingUp className="h-4 w-4 text-muted-foreground mb-1 opacity-40" />
                         </div>
-                        <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
+                        <p className="mt-1.5 text-xs text-muted-foreground">{subtitle}</p>
                     </>
                 )}
             </CardContent>
@@ -199,54 +200,52 @@ export default function DashboardPage() {
     return (
         <div className="space-y-6">
             {error && (
-                <CustomAlert variant="destructive" message="Erro ao processar solicitação." error={error} />
+                <div className="px-6">
+                    <CustomAlert variant="destructive" message="Erro ao processar solicitação." error={error} />
+                </div>
             )}
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {kpiCards.map((card) => (
                     <KpiCard key={card.title} {...card} isLoading={loading} />
                 ))}
             </div>
 
             {/* Tabela de Atividade Recente */}
-            <Card>
-                <CardHeader className="border-b pb-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10">
-                                <Package className="h-4 w-4 text-primary" />
-                            </div>
-                            <div>
-                                <CardTitle className="text-base font-semibold">Atividade Recente</CardTitle>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                    Últimas ordens atualizadas no sistema
-                                </p>
-                            </div>
+            <div className="border-t border-border bg-white">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10">
+                            <Package className="h-4 w-4 text-primary" />
                         </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2 text-xs"
-                            onClick={fetchOrders}
-                            disabled={loading}
-                        >
-                            <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
-                            Atualizar
-                        </Button>
+                        <div>
+                            <p className="text-base font-semibold text-foreground">Atividade Recente</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                                Últimas ordens atualizadas no sistema
+                            </p>
+                        </div>
                     </div>
-                </CardHeader>
-                <CardContent className="pt-4 px-0 pb-0">
-                    <DataTable
-                        columns={columns}
-                        data={orders}
-                        page={page}
-                        totalPages={totalPages}
-                        onPageChange={setPage}
-                        isLoading={loading}
-                    />
-                </CardContent>
-            </Card>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 text-xs"
+                        onClick={fetchOrders}
+                        disabled={loading}
+                    >
+                        <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
+                        Atualizar
+                    </Button>
+                </div>
+                <DataTable
+                    columns={columns}
+                    data={orders}
+                    page={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                    isLoading={loading}
+                />
+            </div>
         </div>
     );
 }

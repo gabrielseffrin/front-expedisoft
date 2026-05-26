@@ -258,23 +258,23 @@ export default function OrdersPage() {
     }, [error]);
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-0">
             {error && (
-                <CustomAlert variant="destructive" message="Erro ao processar solicitação." error={error} />
+                <div className="px-6 pb-4">
+                    <CustomAlert variant="destructive" message="Erro ao processar solicitação." error={error} />
+                </div>
             )}
 
-            <Card>
-                <CardContent className="pt-4 px-0 pb-0">
-                    <DataTable
-                        columns={columns}
-                        data={orders}
-                        page={page}
-                        totalPages={totalPages}
-                        onPageChange={setPage}
-                        isLoading={loading}
-                    />
-                </CardContent>
-            </Card>
+            <div className="bg-white border-y border-border">
+                <DataTable
+                    columns={columns}
+                    data={orders}
+                    page={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                    isLoading={loading}
+                />
+            </div>
 
             {/* Modal de Agendamento */}
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>

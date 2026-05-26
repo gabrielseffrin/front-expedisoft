@@ -65,7 +65,7 @@ export function DataTable<TData, TValue>({
     return (
         <div className="w-full">
 
-            <div className="flex items-center py-4">
+            <div className="flex items-center px-4 py-3">
                 <Input
                     placeholder="Digite para buscar..."
                     value={globalFilter}
@@ -76,7 +76,7 @@ export function DataTable<TData, TValue>({
                 />
             </div>
 
-            <div className="overflow-hidden rounded-md border">
+            <div className="overflow-hidden">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -123,7 +123,7 @@ export function DataTable<TData, TValue>({
                 </Table>
             </div>
 
-            <div className="flex items-center justify-between py-4">
+            <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/20">
                 <span className="text-sm text-muted-foreground">
                     Página {page} de {totalPages}
                 </span>

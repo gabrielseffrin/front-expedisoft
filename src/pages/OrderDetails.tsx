@@ -246,7 +246,7 @@ export default function OrderDetails() {
     const totalCount = packages.length;
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-5 px-6">
             {error && (
                 <CustomAlert
                     variant="destructive"

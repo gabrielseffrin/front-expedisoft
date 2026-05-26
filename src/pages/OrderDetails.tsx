@@ -32,8 +32,8 @@ import {
 } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import CustomAlert from "@/components/ui/custom-alert";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { toast } from "sonner";
 
 import { getOrder, getOrderPhotos } from "@/services/orders.service";
 import type { Order, OrderItem, OrderPackage, OrderPhoto } from "@/services/orders.service";
@@ -174,7 +174,6 @@ export default function OrderDetails() {
     const [photosLoading, setPhotosLoading] = useState<boolean>(false);
     const [selectedPhoto, setSelectedPhoto] = useState<OrderPhoto | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
 
     const formatDate = (date: string | null) => {
         if (!date) return "-";
@@ -197,7 +196,7 @@ export default function OrderDetails() {
                     response.data.items?.flatMap((item: OrderItem) => item.packages || []) || []
                 );
             } catch {
-                setError("Erro ao carregar os dados.");
+                toast.error("Erro ao carregar os dados.");
             } finally {
                 setLoading(false);
             }
@@ -215,12 +214,7 @@ export default function OrderDetails() {
         fetchData();
     }, [orderId]);
 
-    useEffect(() => {
-        if (error) {
-            const timer = setTimeout(() => setError(null), 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [error]);
+
 
     if (loading) return <DetailSkeleton />;
 
@@ -247,13 +241,6 @@ export default function OrderDetails() {
 
     return (
         <div className="space-y-5 px-6">
-            {error && (
-                <CustomAlert
-                    variant="destructive"
-                    message="Erro ao processar solicitação."
-                    error={error}
-                />
-            )}
 
             {/* ── Breadcrumb + Header ── */}
             <div className="flex flex-col gap-3">

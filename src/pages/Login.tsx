@@ -1,5 +1,5 @@
 import { LoginForm } from "@/components/login-form"
-import newLogo from "@/images/new-logo.png"
+import newLogo from "@/images/new-logo.webp"
 
 export default function LoginPage() {
     return (

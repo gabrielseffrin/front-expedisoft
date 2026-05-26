@@ -12,7 +12,7 @@ import {
     SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import newLogo from "@/images/new-logo.png";
+import newLogo from "@/images/new-logo.webp";
 import { cn } from "@/lib/utils";
 
 const items = [

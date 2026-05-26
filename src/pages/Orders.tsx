@@ -3,11 +3,20 @@
 import React, { useEffect, useState } from "react";
 import { getDocks, getOrder, getOrders, scheduleOrder } from "@/services/orders.service";
 import { DataTable } from "@/components/ui/data-table";
-import { CalendarIcon, Clock, Eye, Calendar, User, Warehouse, MoreHorizontal } from "lucide-react";
+import { CalendarIcon, Clock, Eye, Calendar, User, Warehouse, MoreHorizontal, Printer, Download, Filter } from "lucide-react";
 import CustomAlert from "@/components/ui/custom-alert";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -41,17 +50,15 @@ export default function OrdersPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [operators, setOperators] = useState<any[]>([]);
     const [order, setOrder] = useState<any>(null);
-    const [error, setError] = useState<string | null>(null);
-
+    const [loading, setLoading] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
+    const [statusFilter, setStatusFilter] = useState<string>("all");
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
     const [scheduledAt, setScheduledAt] = useState<Date | undefined>(undefined);
     const [scheduledTime, setScheduledTime] = useState<string>("12:00");
     const [operator, setOperator] = useState<string>('');
     const [dock, setDock] = useState<string>('');
     const [docks, setDocks] = useState<any[]>([]);
-
-    const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
 
@@ -120,6 +127,7 @@ export default function OrdersPage() {
         {
             id: "actions",
             header: "Ações",
+            enableSorting: false,
             cell: ({ row }: any) => {
                 const orderId = row.original.id;
                 const status = row.getValue('status') as string;
@@ -165,7 +173,7 @@ export default function OrdersPage() {
             setOrders(response.data);
             setTotalPages(response.meta.last_page);
         } catch {
-            setError("Não foi possível carregar as ordens.");
+            toast.error("Não foi possível carregar as ordens.");
         } finally {
             setLoading(false);
         }
@@ -176,7 +184,7 @@ export default function OrdersPage() {
             const response = await getOperators();
             setOperators(response);
         } catch {
-            setError("Não foi possível carregar os operadores.");
+            toast.error("Não foi possível carregar os operadores.");
         }
     };
 
@@ -185,7 +193,7 @@ export default function OrdersPage() {
             const response = await getDocks();
             setDocks(response);
         } catch {
-            setError("Não foi possível carregar as docas.");
+            toast.error("Não foi possível carregar as docas.");
         }
     };
 
@@ -196,7 +204,7 @@ export default function OrdersPage() {
             setSelectedOrderId(id);
             setModalOpen(true);
         } catch {
-            setError("Erro ao carregar detalhes da ordem.");
+            toast.error("Erro ao carregar detalhes da ordem.");
         }
     };
 
@@ -206,11 +214,11 @@ export default function OrdersPage() {
             if (!scheduledAt || !selectedOrderId) return;
 
             if (!dock) {
-                setError("Selecione uma doca de carregamento.");
+                toast.error("Selecione uma doca de carregamento.");
                 return;
             }
             if (!operator) {
-                setError("Selecione um operador.");
+                toast.error("Selecione um operador.");
                 return;
             }
 
@@ -230,7 +238,7 @@ export default function OrdersPage() {
             await fetchOrders();
             setModalOpen(false);
         } catch {
-            setError("Erro ao agendar o carregamento.");
+            toast.error("Erro ao agendar o carregamento.");
         } finally {
             setScheduledAt(undefined);
             setScheduledTime("12:00");
@@ -250,25 +258,71 @@ export default function OrdersPage() {
 
     useEffect(() => { fetchOrders(); }, [page]);
 
-    useEffect(() => {
-        if (error) {
-            const timer = setTimeout(() => setError(null), 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [error]);
+    const filteredOrders = React.useMemo(() => {
+        if (statusFilter === "all") return orders;
+        return orders.filter((order: any) => order.status === statusFilter);
+    }, [orders, statusFilter]);
 
     return (
-        <div className="space-y-0">
-            {error && (
-                <div className="px-6 pb-4">
-                    <CustomAlert variant="destructive" message="Erro ao processar solicitação." error={error} />
-                </div>
-            )}
-
+        <div className="space-y-4">
             <div className="bg-white border-y border-border">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10">
+                            <Warehouse className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                            <p className="text-base font-semibold text-foreground">Ordens de Carregamento</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                                Gerencie e acompanhe o status das ordens
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 mr-2">
+                            <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className="h-8 w-[140px] text-xs">
+                                    <SelectValue placeholder="Filtrar por status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todos os status</SelectItem>
+                                    <SelectItem value="pending">Pendente</SelectItem>
+                                    <SelectItem value="scheduled">Agendada</SelectItem>
+                                    <SelectItem value="in_progress">Carregando</SelectItem>
+                                    <SelectItem value="completed">Concluída</SelectItem>
+                                    <SelectItem value="divergence">Divergência</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <TooltipProvider delayDuration={0}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="outline" size="sm" className="gap-2 text-xs">
+                                        <Printer className="h-3.5 w-3.5" />
+                                        <span className="hidden sm:inline">Imprimir</span>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Funcionalidade em desenvolvimento</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="outline" size="sm" className="gap-2 text-xs">
+                                        <Download className="h-3.5 w-3.5" />
+                                        <span className="hidden sm:inline">Exportar CSV</span>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Funcionalidade em desenvolvimento</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
+                </div>
+
                 <DataTable
                     columns={columns}
-                    data={orders}
+                    data={filteredOrders}
                     page={page}
                     totalPages={totalPages}
                     onPageChange={setPage}

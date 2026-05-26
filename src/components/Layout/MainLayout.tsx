@@ -1,8 +1,11 @@
-import { Calendar, Bell } from "lucide-react"
+import { Calendar, Bell, ChevronRight, Home as HomeIcon } from "lucide-react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { motion, AnimatePresence } from "framer-motion";
+import { useLocation, Link } from "react-router-dom";
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -18,6 +21,7 @@ export default function MainLayout({
 
     const [now, setNow] = useState(new Date());
     const { user } = useAuth();
+    const location = useLocation();
 
     useEffect(() => {
         const timer = setInterval(() => setNow(new Date()), 1000);
@@ -51,12 +55,15 @@ export default function MainLayout({
                         <div className="flex items-center gap-3">
                             <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
                             <div className="h-4 w-px bg-border" />
-                            <div>
-                                <h2 className="font-semibold text-sm text-foreground leading-tight">{title}</h2>
-                                {description && (
-                                    <p className="text-xs text-muted-foreground leading-tight mt-0.5">{description}</p>
-                                )}
-                            </div>
+                            
+                            {/* Breadcrumb nativo */}
+                            <nav className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground">
+                                <Link to="/dashboard" className="hover:text-foreground transition-colors">
+                                    <HomeIcon className="h-4 w-4" />
+                                </Link>
+                                <ChevronRight className="h-4 w-4 opacity-50" />
+                                <span className="font-medium text-foreground">{title}</span>
+                            </nav>
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -66,6 +73,9 @@ export default function MainLayout({
                                 <span className="capitalize">{formattedDate}</span>
                                 <span className="font-semibold text-foreground">{formattedTime}</span>
                             </div>
+
+                            {/* Theme Toggle */}
+                            <ThemeToggle />
 
                             {/* Sino */}
                             <button
@@ -91,9 +101,18 @@ export default function MainLayout({
                     </header>
 
                     {/* ── Conteúdo ── */}
-                    <div className="flex-1 py-6 animate-fade-in">
-                        {children}
-                    </div>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={location.pathname}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex-1 py-6"
+                        >
+                            {children}
+                        </motion.div>
+                    </AnimatePresence>
                 </main>
             </div>
         </SidebarProvider>

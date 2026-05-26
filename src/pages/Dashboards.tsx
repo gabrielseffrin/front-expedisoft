@@ -8,12 +8,13 @@ import {
     CardHeader,
     CardTitle
 } from "@/components/ui/card";
-import CustomAlert from "@/components/ui/custom-alert";
-import { Package, Activity, AlertCircle, CheckCircle2, RefreshCw, TrendingUp, Clock } from "lucide-react";
+import { Package, Activity, AlertCircle, CheckCircle2, RefreshCw, TrendingUp, Clock, Printer, Download } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { getOrders } from "@/services/orders.service";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -117,7 +118,6 @@ export default function DashboardPage() {
     const [divergences, setDivergences] = useState(0);
     const [completedToday, setCompletedToday] = useState(0);
 
-    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
     const fetchOrders = async () => {
@@ -143,7 +143,7 @@ export default function DashboardPage() {
             setCompletedToday(counts["completed"] || 0);
             setDivergences(counts["divergence"] || 0);
         } catch {
-            setError("Não foi possível carregar as ordens.");
+            toast.error("Não foi possível carregar as ordens.");
         } finally {
             setLoading(false);
         }
@@ -151,12 +151,7 @@ export default function DashboardPage() {
 
     useEffect(() => { fetchOrders(); }, [page]);
 
-    useEffect(() => {
-        if (error) {
-            const timer = setTimeout(() => setError(null), 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [error]);
+
 
     const kpiCards = [
         {
@@ -199,11 +194,6 @@ export default function DashboardPage() {
 
     return (
         <div className="space-y-6">
-            {error && (
-                <div className="px-6">
-                    <CustomAlert variant="destructive" message="Erro ao processar solicitação." error={error} />
-                </div>
-            )}
 
             {/* KPI Cards */}
             <div className="px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -226,16 +216,39 @@ export default function DashboardPage() {
                             </p>
                         </div>
                     </div>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-2 text-xs"
-                        onClick={fetchOrders}
-                        disabled={loading}
-                    >
-                        <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
-                        Atualizar
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <TooltipProvider delayDuration={0}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="outline" size="sm" className="gap-2 text-xs">
+                                        <Printer className="h-3.5 w-3.5" />
+                                        <span className="hidden sm:inline">Imprimir</span>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Funcionalidade em desenvolvimento</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="outline" size="sm" className="gap-2 text-xs">
+                                        <Download className="h-3.5 w-3.5" />
+                                        <span className="hidden sm:inline">Exportar CSV</span>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Funcionalidade em desenvolvimento</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 text-xs ml-2"
+                            onClick={fetchOrders}
+                            disabled={loading}
+                        >
+                            <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
+                            Atualizar
+                        </Button>
+                    </div>
                 </div>
                 <DataTable
                     columns={columns}

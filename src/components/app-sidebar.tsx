@@ -41,24 +41,27 @@ export function AppSidebar() {
         : "?";
 
     return (
-        <Sidebar>
+        <Sidebar collapsible="icon">
             <SidebarContent>
                 {/* ── Logotipo ── */}
-                <div className="flex flex-col items-center px-5 pt-6 pb-5 border-b border-sidebar-border">
+                <div className="flex flex-col items-center px-5 pt-6 pb-5 border-b border-sidebar-border group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:pt-4">
                     <img
                         src={newLogo}
                         alt="ExpediSoft"
-                        className="w-full max-w-[148px] object-contain"
+                        className="w-full max-w-[148px] object-contain transition-all group-data-[collapsible=icon]:hidden"
                         style={{ filter: "brightness(0) invert(1)" }}
                     />
-                    <span className="mt-2 text-[10px] uppercase tracking-[0.2em] text-sidebar-foreground/40 font-medium">
+                    <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-8 h-8 rounded bg-primary/20 text-primary-foreground font-bold text-xs">
+                        ES
+                    </div>
+                    <span className="mt-2 text-[10px] uppercase tracking-[0.2em] text-sidebar-foreground/40 font-medium transition-all group-data-[collapsible=icon]:hidden">
                         Sistema Logístico
                     </span>
                 </div>
 
                 {/* ── Navegação ── */}
                 <SidebarGroup className="pt-3">
-                    <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/35 px-4 mb-1">
+                    <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/35 px-4 mb-1 group-data-[collapsible=icon]:hidden">
                         Menu
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
@@ -69,8 +72,8 @@ export function AppSidebar() {
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton
                                             asChild
+                                            tooltip={item.title}
                                             isActive={isActive}
-                                            size="lg"
                                             className={cn(
                                                 "rounded-lg transition-all",
                                                 isActive
@@ -101,11 +104,11 @@ export function AppSidebar() {
                 <SidebarMenu>
                     {/* Info do usuário */}
                     <SidebarMenuItem>
-                        <div className="flex items-center gap-3 px-3 py-2.5 mb-1 rounded-lg bg-sidebar-accent/50">
+                        <div className="flex items-center gap-3 px-3 py-2.5 mb-1 rounded-lg bg-sidebar-accent/50 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
                             <div className="flex items-center justify-center w-9 h-9 rounded-full bg-sidebar-primary/20 border border-sidebar-primary/30 shrink-0">
                                 <span className="text-xs font-bold text-sidebar-primary">{initials}</span>
                             </div>
-                            <div className="flex flex-col min-w-0">
+                            <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
                                 <span className="text-xs font-semibold text-sidebar-foreground truncate">
                                     {user?.name || "Usuário"}
                                 </span>
@@ -119,7 +122,7 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             onClick={handleLogout}
-                            size="lg"
+                            tooltip="Sair da conta"
                             className="rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10"
                         >
                             <LogOut className="h-4 w-4 shrink-0" />

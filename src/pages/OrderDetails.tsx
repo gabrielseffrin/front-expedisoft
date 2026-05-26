@@ -253,7 +253,7 @@ export default function OrderDetails() {
                         Ordens de Carregamento
                     </button>
                     <ChevronRight className="h-3 w-3" />
-                    <span className="text-foreground font-medium">{order.external_id}</span>
+                    <span className="text-foreground font-medium">Detalhes</span>
                 </div>
 
                 {/* Título + Status */}
@@ -269,10 +269,10 @@ export default function OrderDetails() {
                         </Button>
                         <div>
                             <h1 className="text-xl font-bold tracking-tight text-foreground">
-                                Ordem: {order.external_id}
+                                {order.customer || "Cliente não informado"}
                             </h1>
                             <p className="text-sm text-muted-foreground mt-0.5">
-                                {order.customer || "Cliente não informado"}
+                                Ordem #{order.external_id}
                             </p>
                         </div>
                     </div>

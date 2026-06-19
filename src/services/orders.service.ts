@@ -41,6 +41,10 @@ export interface Order {
     completedAt?: string;
     started_at?: string | null;
     completed_at?: string | null;
+    issue_date?: string | null;
+    scheduled_at?: string | null;
+    updated_at?: string | null;
+    created_at?: string | null;
     items?: OrderItem[];
     totalAmount?: number;
     createdAt?: string;
@@ -67,9 +71,10 @@ interface ScheduleOrderRequest {
     operator_id: string;
 }
 
-interface Dock {
+export interface Dock {
     id: string;
-    name: string;
+    name?: string;
+    dock_code?: string;
 }
 
 interface PaginatedMeta {

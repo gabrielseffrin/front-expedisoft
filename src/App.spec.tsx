@@ -33,7 +33,7 @@ describe('AppRoutes', () => {
     vi.mocked(useAuthHook.useAuth).mockReturnValue({
       signed: true,
       loading: false,
-      user: { id: '1', name: 'Admin', email: 'admin@admin.com', profile: 'admin' },
+      user: { id: '1', name: 'Admin', email: 'admin@admin.com', profile: 'admin' } as any,
       signIn: vi.fn(),
       signOut: vi.fn(),
     });

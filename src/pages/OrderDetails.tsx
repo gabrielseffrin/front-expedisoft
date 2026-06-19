@@ -141,7 +141,7 @@ function InfoItem({
     icon: Icon
 }: {
     label: string;
-    value: string;
+    value?: string | null;
     icon?: React.ComponentType<{ className?: string }>;
 }) {
     return (
@@ -175,7 +175,7 @@ export default function OrderDetails() {
     const [selectedPhoto, setSelectedPhoto] = useState<OrderPhoto | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
-    const formatDate = (date: string | null) => {
+    const formatDate = (date?: string | null) => {
         if (!date) return "-";
         try {
             return format(new Date(date), "dd/MM/yyyy HH:mm", { locale: ptBR });
@@ -218,7 +218,7 @@ export default function OrderDetails() {
 
     if (loading) return <DetailSkeleton />;
 
-    if (!order && !loading) {
+    if (!order) {
         return (
             <div className="flex flex-col items-center justify-center p-20 text-center">
                 <div className="flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">

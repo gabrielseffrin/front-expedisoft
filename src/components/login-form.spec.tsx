@@ -48,7 +48,7 @@ describe('LoginForm', () => {
   });
 
   it('deve chamar login com credenciais corretas', async () => {
-    vi.mocked(authService.login).mockResolvedValueOnce({ token: 'fake-token' });
+    vi.mocked(authService.login).mockResolvedValueOnce({ token: 'fake-token' } as any);
     renderWithRouter(<LoginForm />);
     
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'teste@teste.com' } });

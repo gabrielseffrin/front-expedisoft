@@ -47,8 +47,8 @@ describe('OrderDetails', () => {
       ]
     };
 
-    vi.mocked(ordersService.getOrder).mockResolvedValueOnce({ data: mockOrder });
-    vi.mocked(ordersService.getOrderPhotos).mockResolvedValueOnce({ data: { photos: [] } });
+    vi.mocked(ordersService.getOrder).mockResolvedValueOnce({ data: mockOrder as any });
+    vi.mocked(ordersService.getOrderPhotos).mockResolvedValueOnce({ data: { photos: [] } as any } as any);
 
     renderWithRouter(<OrderDetails />);
 
@@ -63,7 +63,7 @@ describe('OrderDetails', () => {
 
   it('deve exibir mensagem de não encontrado em caso de erro', async () => {
     vi.mocked(ordersService.getOrder).mockRejectedValueOnce(new Error('Not found'));
-    vi.mocked(ordersService.getOrderPhotos).mockResolvedValueOnce({ data: { photos: [] } });
+    vi.mocked(ordersService.getOrderPhotos).mockResolvedValueOnce({ data: { photos: [] } as any } as any);
 
     renderWithRouter(<OrderDetails />);
 
@@ -87,8 +87,8 @@ describe('OrderDetails', () => {
       ]
     };
 
-    vi.mocked(ordersService.getOrder).mockResolvedValueOnce({ data: mockOrder });
-    vi.mocked(ordersService.getOrderPhotos).mockResolvedValueOnce({ data: mockPhotos });
+    vi.mocked(ordersService.getOrder).mockResolvedValueOnce({ data: mockOrder as any });
+    vi.mocked(ordersService.getOrderPhotos).mockResolvedValueOnce({ data: mockPhotos as any } as any);
 
     renderWithRouter(<OrderDetails />);
 

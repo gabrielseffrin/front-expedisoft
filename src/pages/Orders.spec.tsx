@@ -31,8 +31,8 @@ describe('OrdersPage', () => {
       { id: '1', external_id: 'EXT-001', customer: 'Cliente A', status: 'pending' },
     ];
 
-    vi.mocked(ordersService.getOrders).mockResolvedValueOnce({ data: mockOrders, meta: { last_page: 1 } });
-    vi.mocked(userService.getOperators).mockResolvedValueOnce([{ id: 'op1', name: 'Operador 1' }]);
+    vi.mocked(ordersService.getOrders).mockResolvedValueOnce({ data: mockOrders as any, meta: { last_page: 1 } as any } as any);
+    vi.mocked(userService.getOperators).mockResolvedValueOnce([{ id: 'op1', name: 'Operador 1' } as any]);
     vi.mocked(ordersService.getDocks).mockResolvedValueOnce([{ id: 'd1', dock_code: 'Doca 1' }]);
 
     renderWithRouter(<OrdersPage />);
@@ -53,8 +53,8 @@ describe('OrdersPage', () => {
       { id: '1', external_id: 'EXT-001', customer: 'Cliente A', status: 'pending' },
     ];
 
-    vi.mocked(ordersService.getOrders).mockResolvedValueOnce({ data: mockOrders, meta: { last_page: 1 } });
-    vi.mocked(ordersService.getOrder).mockResolvedValueOnce({ data: mockOrders[0] });
+    vi.mocked(ordersService.getOrders).mockResolvedValueOnce({ data: mockOrders as any, meta: { last_page: 1 } as any } as any);
+    vi.mocked(ordersService.getOrder).mockResolvedValueOnce({ data: mockOrders[0] as any });
 
     renderWithRouter(<OrdersPage />);
 
@@ -82,11 +82,11 @@ describe('OrdersPage', () => {
       { id: '1', external_id: 'EXT-001', customer: 'Cliente A', status: 'pending' },
     ];
 
-    vi.mocked(ordersService.getOrders).mockResolvedValue({ data: mockOrders, meta: { last_page: 1 } });
-    vi.mocked(ordersService.getOrder).mockResolvedValueOnce({ data: mockOrders[0] });
-    vi.mocked(userService.getOperators).mockResolvedValueOnce([{ id: 'op1', name: 'Operador 1' }]);
+    vi.mocked(ordersService.getOrders).mockResolvedValue({ data: mockOrders as any, meta: { last_page: 1 } as any } as any);
+    vi.mocked(ordersService.getOrder).mockResolvedValueOnce({ data: mockOrders[0] as any });
+    vi.mocked(userService.getOperators).mockResolvedValueOnce([{ id: 'op1', name: 'Operador 1' } as any]);
     vi.mocked(ordersService.getDocks).mockResolvedValueOnce([{ id: 'd1', dock_code: 'Doca 1' }]);
-    vi.mocked(ordersService.scheduleOrder).mockResolvedValueOnce({});
+    vi.mocked(ordersService.scheduleOrder).mockResolvedValueOnce({} as any);
 
     renderWithRouter(<OrdersPage />);
 

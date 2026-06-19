@@ -22,9 +22,9 @@ describe('DashboardPage', () => {
     ];
 
     vi.mocked(ordersService.getOrders).mockResolvedValueOnce({
-      data: mockOrders,
-      meta: { last_page: 1 }
-    });
+      data: mockOrders as any,
+      meta: { last_page: 1 } as any
+    } as any);
 
     render(<DashboardPage />);
 

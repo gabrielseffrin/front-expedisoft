@@ -29,21 +29,21 @@ describe('LoginForm', () => {
 
   it('deve renderizar os campos de email e senha', () => {
     renderWithRouter(<LoginForm />);
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/senha/i, { selector: 'input' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument();
   });
 
   it('deve exibir mensagem de erro em caso de falha de login', async () => {
     vi.mocked(authService.login).mockRejectedValueOnce({ response: { status: 401 } });
     renderWithRouter(<LoginForm />);
     
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'teste@teste.com' } });
-    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: '123456' } });
-    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    fireEvent.change(screen.getByLabelText(/e-mail/i), { target: { value: 'teste@teste.com' } });
+    fireEvent.change(screen.getByLabelText(/senha/i, { selector: 'input' }), { target: { value: '123456' } });
+    fireEvent.click(screen.getByRole('button', { name: /entrar/i }));
     
     await waitFor(() => {
-      expect(screen.getByText(/usuário ou senha inválidos/i)).toBeInTheDocument();
+      expect(screen.getByText(/E-mail ou senha inválidos/i)).toBeInTheDocument();
     });
   });
 
@@ -51,9 +51,9 @@ describe('LoginForm', () => {
     vi.mocked(authService.login).mockResolvedValueOnce({ token: 'fake-token' } as any);
     renderWithRouter(<LoginForm />);
     
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'teste@teste.com' } });
-    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: '123456' } });
-    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    fireEvent.change(screen.getByLabelText(/e-mail/i), { target: { value: 'teste@teste.com' } });
+    fireEvent.change(screen.getByLabelText(/senha/i, { selector: 'input' }), { target: { value: '123456' } });
+    fireEvent.click(screen.getByRole('button', { name: /entrar/i }));
     
     await waitFor(() => {
       expect(authService.login).toHaveBeenCalledWith({ email: 'teste@teste.com', password: '123456' });

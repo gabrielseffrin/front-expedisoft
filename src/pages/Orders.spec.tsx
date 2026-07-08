@@ -20,6 +20,8 @@ vi.mock('@/services/user.service', () => ({
 describe('OrdersPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(userService.getOperators).mockResolvedValue([{ id: 'op1', name: 'Operador 1' } as any]);
+    vi.mocked(ordersService.getDocks).mockResolvedValue([{ id: 'd1', dock_code: 'Doca 1' }]);
   });
 
   const renderWithRouter = (ui: React.ReactElement) => {
@@ -73,7 +75,7 @@ describe('OrdersPage', () => {
     });
 
     expect(screen.getByText('Agendar Carregamento')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /salvar agendamento/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /confirmar agendamento/i })).toBeInTheDocument();
   });
 
   it.skip('deve preencher e submeter o formulário de agendamento com sucesso', async () => {
@@ -100,7 +102,7 @@ describe('OrdersPage', () => {
     await user.click(scheduleButton);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /salvar agendamento/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /confirmar agendamento/i })).toBeInTheDocument();
     });
 
     const operatorSelect = screen.getByLabelText(/operador/i);
@@ -118,7 +120,7 @@ describe('OrdersPage', () => {
       await user.click(validDay);
     }
 
-    const submitBtn = screen.getByRole('button', { name: /salvar agendamento/i });
+    const submitBtn = screen.getByRole('button', { name: /confirmar agendamento/i });
     await user.click(submitBtn);
 
     await waitFor(() => {

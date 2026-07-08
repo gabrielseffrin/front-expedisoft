@@ -2,10 +2,18 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import DashboardPage from './Dashboards';
 import * as ordersService from '@/services/orders.service';
+import { toast } from 'sonner';
 
 vi.mock('@/services/orders.service', () => ({
   getOrders: vi.fn(),
 }));
+
+vi.mock('sonner', () => ({
+  toast: {
+    error: vi.fn(),
+  },
+}));
+
 
 describe('DashboardPage', () => {
   beforeEach(() => {
@@ -32,9 +40,9 @@ describe('DashboardPage', () => {
       expect(ordersService.getOrders).toHaveBeenCalled();
     });
 
-    expect(screen.getByText('Carregamentos Hoje')).toBeInTheDocument();
+    expect(screen.getByText('Atividade Recente')).toBeInTheDocument();
 
-    const scheduledText = screen.getByText(/Agendadas para hoje/i);
+    const scheduledText = screen.getByText(/Ordens agendadas/i);
     expect(scheduledText.parentElement).toHaveTextContent('1');
 
     const inProgressText = screen.getByText(/Em carregamento/i);
@@ -43,7 +51,7 @@ describe('DashboardPage', () => {
     const divergenceText = screen.getByText(/Requerem atenção/i);
     expect(divergenceText.parentElement).toHaveTextContent('1');
 
-    const completedText = screen.getByText(/Finalizados hoje/i);
+    const completedText = screen.getByText(/Finalizados com sucesso/i);
     expect(completedText.parentElement).toHaveTextContent('2');
   });
 
@@ -53,7 +61,7 @@ describe('DashboardPage', () => {
     render(<DashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Não foi possível carregar as ordens./i)).toBeInTheDocument();
+      expect(toast.error).toHaveBeenCalledWith('Não foi possível carregar as ordens.');
     });
   });
 });

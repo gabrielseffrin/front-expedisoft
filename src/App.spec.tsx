@@ -24,9 +24,9 @@ describe('AppRoutes', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Faça login em sua conta')).toBeInTheDocument();
+    expect(screen.getByText('Faça login para acessar o painel de controle')).toBeInTheDocument();
 
-    expect(screen.queryByText('Visão geral do sistema')).not.toBeInTheDocument();
+    expect(screen.queryByText('Tendência de Atividade')).not.toBeInTheDocument();
   });
 
   it('deve permitir o acesso à rota protegida se o usuário estiver autenticado', () => {
@@ -44,7 +44,7 @@ describe('AppRoutes', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Visão geral do sistema')).toBeInTheDocument();
+    expect(screen.getByText('Tendência de Atividade')).toBeInTheDocument();
   });
 
   it('deve mostrar tela de loading se a autenticação estiver carregando', () => {

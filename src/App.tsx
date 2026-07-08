@@ -8,6 +8,7 @@ import MainLayout from "@/components/Layout/MainLayout";
 import DashboardPage from "@/pages/Dashboards";
 import OrdersPage from "@/pages/Orders";
 import OrderDetails from "@/pages/OrderDetails";
+import HistoryPage from "@/pages/History";
 
 export function PrivateRoute({children}: { children: JSX.Element }) {
     const {signed, loading} = useAuth();
@@ -64,7 +65,7 @@ export function AppRoutes() {
                 element={
                     <PrivateRoute>
                         <MainLayout title="Histórico" description="Histórico de pedidos e operações">
-                            <div className="flex h-screen items-center justify-center">Histórico - Protected Route</div>
+                            <HistoryPage />
                         </MainLayout>
                     </PrivateRoute>
                 }

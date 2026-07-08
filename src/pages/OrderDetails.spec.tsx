@@ -28,8 +28,8 @@ describe('OrderDetails', () => {
     vi.mocked(ordersService.getOrder).mockImplementation(() => new Promise(() => { }));
     vi.mocked(ordersService.getOrderPhotos).mockImplementation(() => new Promise(() => { }));
 
-    renderWithRouter(<OrderDetails />);
-    expect(screen.getByText(/carregando detalhes do pedido/i)).toBeInTheDocument();
+    const { container } = renderWithRouter(<OrderDetails />);
+    expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
   });
 
   it('deve renderizar os detalhes da ordem corretamente', async () => {
@@ -56,8 +56,8 @@ describe('OrderDetails', () => {
       expect(screen.queryByText(/carregando detalhes do pedido/i)).not.toBeInTheDocument();
     });
 
-    expect(screen.getByText('Pedido Externo: EXT-001')).toBeInTheDocument();
-    expect(screen.getByText('Cliente A')).toBeInTheDocument();
+    expect(screen.getByText('Ordem #EXT-001')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Cliente A', level: 1 })).toBeInTheDocument();
     expect(screen.getByText('PKG-001')).toBeInTheDocument();
   });
 
